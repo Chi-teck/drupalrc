@@ -81,7 +81,7 @@ _dbin() {
     return 1
   fi
 
-  local suggestions=$(find $(_dvendor $drupal_root)/bin -maxdepth 1 -executable -exec basename {} \;)
+  local suggestions=$(find $(_dvendor $drupal_root)/bin -mindepth 1 -maxdepth 1 -executable -exec basename {} \;)
   local cur="${COMP_WORDS[COMP_CWORD]}"
   COMPREPLY=( $(compgen -W "${suggestions}" -- ${cur}) )
 }

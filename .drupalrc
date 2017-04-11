@@ -176,7 +176,7 @@ function drupalcs {
       $file --standard=Drupal,DrupalPractice "$@"
       return $?
     else
-      _derror 'PHP Codesniffer is not installed.'
+      _derror 'PHP code sniffer is not installed.'
       return 1;
     fi
   fi
