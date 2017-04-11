@@ -1,0 +1,332 @@
+#===============================================================================
+# DRUPALRC
+#
+# Project URL: https://github.com/Chi-teck/drupalrc
+#===============================================================================
+
+#-------------------------------------------------------------------------------
+# Prints Drupal root directory.
+#-------------------------------------------------------------------------------
+function droot {
+  local dir=$([ -n "$1" ] && readlink -f "$1" || pwd)
+  while true; do
+    if [ "$dir" == '/' ]; then
+      return 1;
+    fi
+    if _dversion $dir > /dev/null; then
+      echo $dir
+      return 0
+    fi
+    dir=$(dirname $dir)
+  done
+}
+
+#-------------------------------------------------------------------------------
+# Quick navigation between Drupal directories.
+#-------------------------------------------------------------------------------
+function dcd {
+  local drupal_root=$(droot)
+  if [ -z "$drupal_root" ]; then
+    _derror 'No Drupal installation was found.'
+    return 1
+  fi
+
+  if [ -z "$1" ]; then
+    cd $drupal_root
+    return 0;
+  fi
+
+  for dir in $(_dcd_dirs $(_dversion $drupal_root)); do
+    if [ -d "$drupal_root/$dir/$1" ]; then
+      cd $drupal_root/$dir/$1
+      return 0
+    fi
+  done
+
+  _derror "No such directory $1."
+  return 1
+}
+
+#-------------------------------------------------------------------------------
+# Downloads Drupal projects.
+#-------------------------------------------------------------------------------
+function dl {
+  if [ -z "$1" ]; then
+    _derror 'Missing project name.'
+    return 1;
+  fi
+
+  local drupal_root=$(droot)
+  if [ -z "$drupal_root" ]; then
+    _derror 'No Drupal installation was found.'
+    return 1;
+  fi
+
+  local drupal_version=$(_dversion $drupal_root)
+  if [ $drupal_version = 8 ]; then
+    composer require -d $drupal_root $(echo $@ | sed 's/\</drupal\//g')
+  else
+    drush dl "$@"
+  fi
+}
+
+#-------------------------------------------------------------------------------
+# Rebuilds Drupal caches.
+#-------------------------------------------------------------------------------
+function dcr {
+  local drupal_root=$(droot)
+  if [ -n "$drupal_root" ] && [ $(_dversion $drupal_root) = 8 ]; then
+    drush cache-rebuild
+  else
+    # Clear the cache even no Drupal installation was found. Drush may need this
+    # to clear own cache.
+    drush cache-clear all
+  fi
+}
+
+#-------------------------------------------------------------------------------
+# Opens Drupal configuration files in editor.
+#-------------------------------------------------------------------------------
+function dconf {
+  local drupal_root=$(droot)
+  if [ -z "$drupal_root" ]; then
+    _derror 'No Drupal installation was found.'
+    return 1;
+  fi
+  local file=$drupal_root/sites/default/${1-settings.php}
+  if [ -f $file ]; then
+    ${VISUAL-${EDITOR-vi}} $file
+    return $?
+  else
+    return 1
+  fi
+}
+
+#-------------------------------------------------------------------------------
+# Executes scripts from vendor/bin directory.
+#-------------------------------------------------------------------------------
+function dbin {
+  local drupal_root=$(droot)
+  if [ -z "$drupal_root" ]; then
+    _derror 'Drupal installation was not found.'
+    return 1;
+  elif [ -z "$1" ]; then
+    _derror 'No file specified.'
+    return 1;
+  else
+    local file=$(_dvendor $drupal_root)/bin/$1
+    if [ ! -f $file ]; then
+      _derror 'No such file.'
+      return 1;
+    else
+      $file "${@:2}"
+      return $?
+    fi
+  fi
+}
+
+#-------------------------------------------------------------------------------
+# Executes Drupal console
+#-------------------------------------------------------------------------------
+function drupal {
+  local drupal_root=$(droot)
+  if [ -n "$drupal_root" ] && [ $(_dversion $drupal_root) = 8 ]; then
+    local file=$(_dvendor $drupal_root)/bin/drupal
+    if [ -f $file ]; then
+      $file "$@"
+      return $?
+    else
+      _derror 'Drupal console is not installed.'
+      return 1;
+    fi
+  fi
+  # Run Drupal console launcher.
+  /usr/local/bin/drupal "$@"
+  return $?
+}
+
+#-------------------------------------------------------------------------------
+# Executes Drush.
+#-------------------------------------------------------------------------------
+function drush {
+  local drupal_root=$(droot)
+  if [ -n "$drupal_root" ] && [ $(_dversion $drupal_root) = 8 ]; then
+    local file=$(_dvendor $drupal_root)/bin/drush
+    if [ -f $file ]; then
+      $file "$@"
+      return $?
+    else
+      _derror 'Drush is not installed.'
+      return 1;
+    fi
+  fi
+  # Run global Drush.
+  /usr/local/bin/drush "$@"
+  return $?
+}
+
+#-------------------------------------------------------------------------------
+# Executes PHP code sniffer using Drupal standards.
+#-------------------------------------------------------------------------------
+function drupalcs {
+  local drupal_root=$(droot)
+  if [ -n "$drupal_root" -a $(_dversion $drupal_root) = 8 ]; then
+    local file=$(_dvendor $drupal_root)/bin/phpcs
+    if [ -f $file ]; then
+      $file --standard=Drupal,DrupalPractice "$@"
+      return $?
+    else
+      _derror 'PHP Codesniffer is not installed.'
+      return 1;
+    fi
+  fi
+
+  # Run global sniffer.
+  phpcs --standard=Drupal,DrupalPractice "$@"
+  return $?
+}
+
+#-------------------------------------------------------------------------------
+# Runs PHPUnit tests.
+#-------------------------------------------------------------------------------
+function dunit {
+  local drupal_root=$(droot)
+  if [ -z "$drupal_root" ]; then
+    _derror 'No Drupal installation was found.'
+    return 1
+  fi
+
+  local file=$(_dvendor $drupal_root)/bin/phpunit
+  if [ -f $file ]; then
+    sudo -uwww-data $file -c $drupal_root/core $@
+  else
+    _derror 'PHPUnit was not found.'
+    return 1
+  fi
+}
+
+#-------------------------------------------------------------------------------
+# Runs Drupal tests.
+#-------------------------------------------------------------------------------
+function dtest {
+  local drupal_root=$(droot)
+  if [ -z "$drupal_root" ]; then
+    _derror 'No Drupal installation was found.'
+    return 1
+  fi
+
+  local options='--color --concurrency 31'
+  if [[ $* != *--url* ]]; then
+    local test_url=$(sed -ne "s/\$settings\['test_url'\] = '\(.*\)';/\1/p" $drupal_root/sites/default/settings.local.php)
+    if [ -n "$test_url" ]; then
+      options+=" --url $test_url";
+    else
+      _derror 'URL option is required.'
+      return 1
+    fi
+  fi
+
+  local drupal_version=$(_dversion $drupal_root)
+  if [ $drupal_version = 8 ]; then
+   sudo -uwww-data php $drupal_root/core/scripts/run-tests.sh $options "$@"
+  else
+   sudo -uwww-data php $drupal_root/scripts/run-tests.sh $options "$@"
+  fi
+}
+
+#-------------------------------------------------------------------------------
+# Prepare sites/default directory for Drupal installation.
+#-------------------------------------------------------------------------------
+function dready {
+  local drupal_root=$(droot)
+  if [ -n "$drupal_root" ]; then
+      local dir=$drupal_root/sites/default
+      if [ -d $dir/files ]; then
+      read -p 'Remove sites/default/files directory? '
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        rm -r $dir/files
+      else
+        return 0
+      fi
+    fi
+    mkdir -m777 $dir/files
+    if [ -f $dir/settings.php ]; then
+      read -p 'Remove sites/default/settings.php file? '
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        rm $dir/settings.php
+      else
+        return 0
+      fi
+    fi
+    cp $dir/{default.,}settings.php &&
+    chmod 777 $dir/settings.php
+  else
+    _derror 'No Drupal installation was found.'
+    return 1;
+  fi
+}
+
+#-------------------------------------------------------------------------------
+# Fixes file permissions.
+#
+# @see https://www.drupal.org/node/244924
+#-------------------------------------------------------------------------------
+function dpermissions {
+  # https://www.drupal.org/node/244924
+  _derror 'Not implemented yet.'
+}
+
+#-------------------------------------------------------------------------------
+# Prints Drupal major version.
+#
+# @internal
+#-------------------------------------------------------------------------------
+function _dversion {
+  if [ -f $1/index.php -a -f $1/core/includes/bootstrap.inc ]; then
+    echo 8
+  elif [ -f $1/index.php -a -d $1/includes/database ]; then
+    echo 7
+  elif [ -f $1/index.php -a -f $1/includes/database.inc ]; then
+    echo 6
+  else
+    return 1
+  fi
+}
+
+#-------------------------------------------------------------------------------
+# Prints path to Drupal vendor directory.
+#
+# @internal
+#-------------------------------------------------------------------------------
+function _dvendor {
+  if [ -d $1/vendor ]; then
+    readlink -f $1/vendor
+  # If the site was built using Drupal composer the location is different.
+  elif [ -d $1/../vendor ]; then
+    readlink -f $1/../vendor
+  else
+    return 1
+  fi
+}
+
+#-------------------------------------------------------------------------------
+# Prints error message.
+#
+# @internal
+#-------------------------------------------------------------------------------
+function _derror {
+  (>&2 echo "$@")
+}
+
+#-------------------------------------------------------------------------------
+# Finds Drupal dirs to navigate.
+#
+# @internal
+#-------------------------------------------------------------------------------
+function _dcd_dirs {
+  local dirs='sites sites/all all sites/default default'
+  [ $1 = 8 ] && dirs="$dirs modules themes profiles modules/contrib modules/custom profiles/modules profiles/modules/contrib profiles/modules/custom core/modules core/themes core/profiles"
+  [ $1 = 7 -o $1 = 6 ] && dirs="$dirs sites/all/modules sites/all/modules/contrib sites/all/modules/custom sites/all/modules/features sites/all/themes modules themes profiles profiles/modules profiles/modules/contrib profiles/modules/custom profiles/modules/features"
+  dirs="$dirs ."
+  echo $dirs
+}
