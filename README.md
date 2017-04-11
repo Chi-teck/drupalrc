@@ -22,7 +22,7 @@ Print absolute path to Drupal root directory.
 ### dcd
 Quick navigation between Drupal directories.
 ```bash
-dcd views # core/modules/viws
+dcd views # core/modules/views
 dcd files # sites/default/files
 dcd contrib # modules/contrib
 dcd themes # themes
