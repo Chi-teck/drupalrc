@@ -16,7 +16,7 @@ _dcd() {
 
   local suggestions
   for dir in $(_dcd_dirs $(_dversion $drupal_root)); do
-    [ -d $dir ] && suggestions="$suggestions "$(find $drupal_root/$dir -maxdepth 1 -type d -name '[^.]*' -exec basename {} \;)
+    [ -d $drupal_root/$dir ] && suggestions="$suggestions "$(find $drupal_root/$dir -maxdepth 1 -type d -name '[^.]*' -exec basename {} \;)
   done
 
   local cur="${COMP_WORDS[COMP_CWORD]}"
