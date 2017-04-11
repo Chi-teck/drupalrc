@@ -235,7 +235,7 @@ function dtest {
 }
 
 #-------------------------------------------------------------------------------
-# Prepare sites/default directory for Drupal installation.
+# Prepares sites/default directory for Drupal installation.
 #-------------------------------------------------------------------------------
 function dready {
   local drupal_root=$(droot)
