@@ -9,7 +9,7 @@ Download _.drupalrc_ file into your home directory and source it from _.bashrc_ 
 ```bash
 # Quck install.
 url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master
-wget $url/.drupalrc && echo source ~/.drupalrc >> ~/.bashrc &&
+wget -P$HOME $url/.drupalrc && echo source ~/.drupalrc >> ~/.bashrc &&
 sudo wget -P /etc/bash_completion.d $url/drupal.complete.sh
 ```
 Log out and log in again for the changes to take effect.
