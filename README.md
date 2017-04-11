@@ -73,7 +73,7 @@ dunit tests/src/Functional/SomeTest.php
 ## dtest
 Launcher for _run-scripts.sh_.
 ```bash
-dtest --url http://localhost/drupal/ . # The URL can be configured in settings.local.php.
+dtest --url http://localhost/drupal . # The URL can be configured in settings.local.php.
 ```
 
 ## dready
