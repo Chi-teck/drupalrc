@@ -113,3 +113,27 @@ _dtest() {
   COMPREPLY=( $(compgen -W "${suggestions}" -- ${cur}) )
 }
 complete -F _dtest dtest
+
+_dunit() {
+  COMPREPLY=()
+
+  local drupal_root=$(droot)
+  if [ -z "$drupal_root" ]; then
+    return 1
+  fi
+
+  local file=$(_dvendor $drupal_root)/bin/phpunit
+  if [ ! -f $file ]; then
+    return 1
+  fi
+
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  # Only options are supported.
+  if [ "${cur:0:1}" != '-' ];then
+    return 0
+  fi
+
+  local suggestions=$($file --help | grep -oE ' --[a-z-]+')
+  COMPREPLY=( $(compgen -W "${suggestions}" -- ${cur}) )
+}
+complete -F _dunit dunit
