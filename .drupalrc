@@ -226,7 +226,7 @@ function dtest {
     fi
   fi
 
-  sudo -uwww-data php drupal_root/$([ $(_dversion $drupal_root) = 8 ] && echo 'core/')scripts/run-tests.sh $options "$@"
+  sudo -uwww-data php $drupal_root/$([ $(_dversion $drupal_root) = 8 ] && echo 'core/')scripts/run-tests.sh $options "$@"
 }
 
 #-------------------------------------------------------------------------------
