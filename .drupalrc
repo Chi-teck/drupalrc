@@ -226,12 +226,7 @@ function dtest {
     fi
   fi
 
-  local drupal_version=$(_dversion $drupal_root)
-  if [ $drupal_version = 8 ]; then
-   sudo -uwww-data php $drupal_root/core/scripts/run-tests.sh $options "$@"
-  else
-   sudo -uwww-data php $drupal_root/scripts/run-tests.sh $options "$@"
-  fi
+  sudo -uwww-data php drupal_root/$([ $(_dversion $drupal_root) = 8 ] && echo 'core/')scripts/run-tests.sh $options "$@"
 }
 
 #-------------------------------------------------------------------------------

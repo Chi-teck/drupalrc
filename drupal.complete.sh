@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# DCD completeion.
+# DCD completion.
 #-------------------------------------------------------------------------------
 _dcd() {
   COMPREPLY=()
@@ -25,7 +25,7 @@ _dcd() {
 complete -F _dcd dcd
 
 #-------------------------------------------------------------------------------
-# DL completeion.
+# DL completion.
 #-------------------------------------------------------------------------------
 _dl() {
   COMPREPLY=()
@@ -43,7 +43,7 @@ _dl() {
 complete -F _dl dl
 
 #-------------------------------------------------------------------------------
-# DCONF completeion.
+# DCONF completion.
 #-------------------------------------------------------------------------------
 _dconf() {
   COMPREPLY=()
@@ -66,7 +66,7 @@ _dconf() {
 complete -F _dconf dconf
 
 #-------------------------------------------------------------------------------
-# DBIN completeion.
+# DBIN completion.
 #-------------------------------------------------------------------------------
 _dbin() {
   COMPREPLY=()
@@ -86,3 +86,30 @@ _dbin() {
   COMPREPLY=( $(compgen -W "${suggestions}" -- ${cur}) )
 }
 complete -F _dbin dbin
+
+#-------------------------------------------------------------------------------
+# DTEST completion.
+#-------------------------------------------------------------------------------
+_dtest() {
+  COMPREPLY=()
+
+  local drupal_root=$(droot)
+  if [ -z "$drupal_root" ]; then
+    return 1
+  fi
+
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local suggestions
+  local file=$drupal_root/$([ $(_dversion $drupal_root) = 8 ] && echo 'core/')scripts/run-tests.sh
+
+  # Options.
+  if [ "${cur:0:1}" = '-' ];then
+    suggestions=$(php $file --help | grep -oE ' --[a-z-]+')
+  # Groups.
+  else
+    suggestions=$(php $file --list | grep -vE '([- ]|^$)')
+  fi
+
+  COMPREPLY=( $(compgen -W "${suggestions}" -- ${cur}) )
+}
+complete -F _dtest dtest
