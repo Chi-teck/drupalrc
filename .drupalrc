@@ -126,7 +126,7 @@ function dbin {
 }
 
 #-------------------------------------------------------------------------------
-# Executes Drupal console
+# Executes Drupal console.
 #-------------------------------------------------------------------------------
 function drupal {
   local drupal_root=$(droot)

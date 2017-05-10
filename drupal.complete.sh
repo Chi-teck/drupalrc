@@ -132,7 +132,7 @@ _dunit() {
   fi
 
   local cur="${COMP_WORDS[COMP_CWORD]}"
-  # Only options are supported.
+  # Only options can be completed.
   if [ "${cur:0:1}" != '-' ];then
     return 0
   fi
@@ -140,4 +140,4 @@ _dunit() {
   local suggestions=$($file --help | grep -oE ' --[a-z-]+')
   COMPREPLY=( $(compgen -W "${suggestions}" -- ${cur}) )
 }
-complete -F _dunit dunit
+complete -fF _dunit dunit
