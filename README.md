@@ -8,11 +8,13 @@ Download _.drupalrc_ file into your home directory and source it from _.bashrc_ 
 
 ### Quck install.
 ```bash
+# System wide installation
 url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master
 wget -O /etc/drupalrc $url/drupalrc && echo source /etc/drupalrc >> /etc/bash.bashrc &&
 wget -O /etc/bash_completion.d/drupal.complete.sh $url/drupal.complete.sh
 ```
-```
+
+```bash
 # Local installation.
 url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master
 wget -O $HOME/.drupalrc $url/drupalrc && echo source $HOME/.drupalrc >> $HOME/.bashrc &&
