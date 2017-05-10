@@ -1,12 +1,8 @@
 # Drupal RC
 
-Useful Bash funcitons for Drupal development.
+Useful Bash functions for Drupal development.
 
 ## Installation
-
-Download _.drupalrc_ file into your home directory and source it from _.bashrc_ file. In order to make use of bash completions you need to download _drupal.complete.sh_ file into _/etc/bash_comletion.d_ directory. Note that actual path of bash completion directory can differ on your system.
-
-### Quck install.
 
 ```bash
 # Local installation.
