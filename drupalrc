@@ -72,7 +72,7 @@ function dl {
 }
 
 #-------------------------------------------------------------------------------
-# Downloads and enables Drupal projects.
+# Downloads and enables Drupal modules.
 #-------------------------------------------------------------------------------
 function dle {
   dl "$@" && drush en -y "$@"
