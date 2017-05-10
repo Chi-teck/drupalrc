@@ -44,7 +44,7 @@ Download Drupal projects using Composer or Drush (depends on Drupal version).
 dl admin_toolbar token feeds
 ```
 ## dle
-Download and immediately Drupal projects.
+Download and immediately enable Drupal modules.
 
 ## dcr
 Rebuild Drupal caches using `drush cr` or `drush cc all` (depends on Drupal version).
