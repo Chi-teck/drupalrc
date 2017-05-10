@@ -12,7 +12,9 @@ Download _.drupalrc_ file into your home directory and source it from _.bashrc_ 
 # Local installation.
 url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master
 wget -O $HOME/.drupalrc $url/drupalrc && echo source $HOME/.drupalrc >> $HOME/.bashrc &&
-wget -O $HOME/.drupal.complete.sh $url/drupal.complete.sh && echo source $HOME/.drupal.complete.sh >> $HOME/.bash_completion
+wget -O $HOME/.drupal.complete.sh $url/drupal.complete.sh &&
+echo source $HOME/.drupal.complete.sh >> $HOME/.bash_completion &&
+mkdir $HOME/.drupal-projects && wget -P $HOME/.drupal-projects $url/drupal-projects/d{6,7,8}.txt
 ```
 
 ```bash
@@ -20,6 +22,7 @@ wget -O $HOME/.drupal.complete.sh $url/drupal.complete.sh && echo source $HOME/.
 url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master
 wget -O /etc/drupalrc $url/drupalrc && echo source /etc/drupalrc >> /etc/bash.bashrc &&
 wget -O /etc/bash_completion.d/drupal.complete.sh $url/drupal.complete.sh
+mkdir /usr/share/drupal-projects && wget -P /usr/share/drupal-projects $url/drupal-projects/d{6,7,8}.txt
 ```
 
 Log out and log in again for the changes to take effect.
