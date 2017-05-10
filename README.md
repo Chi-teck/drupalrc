@@ -43,6 +43,8 @@ Download Drupal projects using Composer or Drush (depends on Drupal version).
 ```bash
 dl admin_toolbar token feeds
 ```
+## dle
+Download and immediately Drupal projects.
 
 ## dcr
 Rebuild Drupal caches using `drush cr` or `drush cc all` (depends on Drupal version).
