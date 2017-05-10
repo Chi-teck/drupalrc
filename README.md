@@ -7,18 +7,19 @@ Useful Bash funcitons for Drupal development.
 Download _.drupalrc_ file into your home directory and source it from _.bashrc_ file. In order to make use of bash completions you need to download _drupal.complete.sh_ file into _/etc/bash_comletion.d_ directory. Note that actual path of bash completion directory can differ on your system.
 
 ### Quck install.
-```bash
-# System wide installation
-url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master
-wget -O /etc/drupalrc $url/drupalrc && echo source /etc/drupalrc >> /etc/bash.bashrc &&
-wget -O /etc/bash_completion.d/drupal.complete.sh $url/drupal.complete.sh
-```
 
 ```bash
 # Local installation.
 url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master
 wget -O $HOME/.drupalrc $url/drupalrc && echo source $HOME/.drupalrc >> $HOME/.bashrc &&
 wget -O $HOME/.drupal.complete.sh $url/drupal.complete.sh && echo source $HOME/.drupal.complete.sh >> $HOME/.bash_completion
+```
+
+```bash
+# System wide installation
+url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master
+wget -O /etc/drupalrc $url/drupalrc && echo source /etc/drupalrc >> /etc/bash.bashrc &&
+wget -O /etc/bash_completion.d/drupal.complete.sh $url/drupal.complete.sh
 ```
 
 Log out and log in again for the changes to take effect.
