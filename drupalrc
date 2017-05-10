@@ -64,6 +64,7 @@ function dl {
 
   local drupal_version=$(_dversion $drupal_root)
   if [ $drupal_version = 8 ]; then
+    echo Starting composer, this may take some time...
     composer require -d $drupal_root $(echo $@ | sed 's/\</drupal\//g')
   else
     drush dl "$@"
