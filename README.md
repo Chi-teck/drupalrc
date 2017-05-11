@@ -6,7 +6,7 @@ Useful Bash functions for Drupal development.
 
 ```bash
 # Local installation.
-url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master
+url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master &&
 wget -O $HOME/.drupalrc $url/drupalrc && echo source $HOME/.drupalrc >> $HOME/.bashrc &&
 wget -O $HOME/.drupal.complete.sh $url/drupal.complete.sh &&
 echo source $HOME/.drupal.complete.sh >> $HOME/.bash_completion &&
@@ -15,9 +15,9 @@ mkdir $HOME/.drupal-projects && wget -P $HOME/.drupal-projects $url/drupal-proje
 
 ```bash
 # System-wide installation (run as super user).
-url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master
+url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master &&
 wget -O /etc/drupalrc $url/drupalrc && echo source /etc/drupalrc >> /etc/bash.bashrc &&
-wget -O /etc/bash_completion.d/drupal.complete.sh $url/drupal.complete.sh
+wget -O /etc/bash_completion.d/drupal.complete.sh $url/drupal.complete.sh &&
 mkdir /usr/share/drupal-projects && wget -P /usr/share/drupal-projects $url/drupal-projects/d{6,7,8}.txt
 ```
 
