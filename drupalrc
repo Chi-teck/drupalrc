@@ -189,7 +189,7 @@ function drush {
 #-------------------------------------------------------------------------------
 function drupalcs {
   local drupal_root=$(droot)
-  if [ -n "$drupal_root" -a $(_dversion $drupal_root) = 8 ]; then
+  if [ -n "$drupal_root" ] && [ $(_dversion $drupal_root) = 8 ]; then
     local file=$(_dvendor $drupal_root)/bin/phpcs
     if [ -f $file ]; then
       $file --standard=Drupal,DrupalPractice "$@"
