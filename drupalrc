@@ -51,10 +51,6 @@ function dcd {
 # Downloads Drupal projects.
 #-------------------------------------------------------------------------------
 function dl {
-  if [ -z "$1" ]; then
-    _derror 'Missing project name.'
-    return 1;
-  fi
 
   local drupal_root=$(droot)
   if [ -z "$drupal_root" ]; then
@@ -62,12 +58,27 @@ function dl {
     return 1;
   fi
 
+  if [ "$1" = '--enable' ]; then
+    local enable=1
+    shift 1
+  fi
+
   local drupal_version=$(_dversion $drupal_root)
+  local projects=${@:-$(_dpeco $drupal_version)}
+  if [ -z "$projects" ]; then
+    _derror 'Missing project name.'
+    return 1;
+  fi
+
   if [ $drupal_version = 8 ]; then
     echo Starting composer, this may take some time...
-    composer require -d $drupal_root $(echo $@ | sed 's/\</drupal\//g')
+    composer require -d $drupal_root $(echo $projects | sed 's/\</drupal\//g')
   else
-    drush dl "$@"
+    drush dl "$projects"
+  fi
+
+  if [ "$?" -a -n "$enable" ]; then
+    drush en "$projects"
   fi
 }
 
@@ -75,7 +86,7 @@ function dl {
 # Downloads and enables Drupal modules.
 #-------------------------------------------------------------------------------
 function dle {
-  dl "$@" && drush en -y "$@"
+  dl --enable "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -332,4 +343,22 @@ function _dcd_dirs {
   [ $1 = 7 -o $1 = 6 ] && dirs="$dirs sites/all/modules sites/all/modules/contrib sites/all/modules/custom sites/all/modules/features sites/all/themes modules themes profiles profiles/modules profiles/modules/contrib profiles/modules/custom profiles/modules/features"
   dirs="$dirs ."
   echo $dirs
+}
+
+#-------------------------------------------------------------------------------
+# Query project name using peco command.
+#
+# @internal
+# @see https://github.com/peco/peco
+#-------------------------------------------------------------------------------
+function _dpeco {
+  projects_file=/usr/share/drupal-projects/d$1.txt
+  if hash peco 2>/dev/null && [ -f $projects_file ]; then
+    project=$(cat $projects_file | peco)
+    if [ -n "$project" ]; then
+      echo $project
+      return 0
+    fi
+  fi
+  return 1
 }
