@@ -13,10 +13,21 @@ function droot {
     if [ "$dir" == '/' ]; then
       return 1;
     fi
+    
     if _dversion $dir > /dev/null; then
       echo $dir
       return 0
     fi
+    
+    local droot
+    for sub_dir in www docroot web htdocs public; do
+      droot=$dir/$sub_dir
+      if _dversion $droot > /dev/null; then
+        echo $droot
+        return 0
+      fi
+    done
+
     dir=$(dirname $dir)
   done
 }
