@@ -83,7 +83,8 @@ function dl {
 
   if [ $DRUPAL_VERSION = 8 ]; then
     echo Starting composer, this may take some time...
-    composer require -d $DRUPAL_ROOT $(echo $PROJECTS | sed 's/\</drupal\//g')
+    local VENDOR_DIR=$(_dvendor $DRUPAL_ROOT)
+    composer require -d $VENDOR_DIR/.. $(echo $PROJECTS | sed 's/\</drupal\//g')
   else
     drush dl "$PROJECTS"
   fi
@@ -191,7 +192,7 @@ function drush {
     fi
   fi
   # Run global Drush.
-  /usr/local/bin/drush "$@"
+  /usr/local/bin/drush --root=$DRUPAL_ROOT "$@"
   return $?
 }
 
