@@ -196,7 +196,7 @@ function drupal {
       $FILE "$@"
       return $?
     else
-      _derror 'Drupal console is not installed.'
+      _derror 'Drupal console is not installed on this site.'
       return 1;
     fi
   fi
@@ -216,7 +216,7 @@ function drush {
       $FILE "$@"
       return $?
     else
-      _derror 'Drush is not installed.'
+      _derror 'Drush is not installed on this site.'
       return 1;
     fi
   fi
