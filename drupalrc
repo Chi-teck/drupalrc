@@ -229,19 +229,6 @@ function drush {
 # Executes PHP code sniffer using Drupal standards.
 #-------------------------------------------------------------------------------
 function drupalcs {
-  local DRUPAL_ROOT=$(droot)
-  if [ -n "$DRUPAL_ROOT" ] && [ $(_dversion $DRUPAL_ROOT) = 8 ]; then
-    local FILE=$(_dvendor $DRUPAL_ROOT)/bin/phpcs
-    if [ -f $FILE ]; then
-      $FILE --standard=Drupal,DrupalPractice "$@"
-      return $?
-    else
-      _derror 'PHP code sniffer is not installed.'
-      return 1;
-    fi
-  fi
-
-  # Run global sniffer.
   phpcs --standard=Drupal,DrupalPractice "$@"
   return $?
 }
