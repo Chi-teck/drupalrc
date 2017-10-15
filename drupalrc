@@ -36,23 +36,52 @@ function droot {
 # Quick navigation between Drupal directories.
 #-------------------------------------------------------------------------------
 function dcd {
+
+  if [ "$1" = $HOME -o "$1" = '-' ]; then
+    cd $1
+    return 0
+  fi
+
   local DRUPAL_ROOT=$(droot)
   if [ -z "$DRUPAL_ROOT" ]; then
     _derror 'No Drupal installation was found.'
     return 1
   fi
 
+  # Navigate to Drupal root if no argument was provided.
   if [ -z "$1" ]; then
     cd $DRUPAL_ROOT
     return 0;
   fi
 
-  for DIR in $(_dcd_dirs $(_dversion $DRUPAL_ROOT)); do
+  # Target directory exists in current location.
+  if [ -d "$1" ]; then
+    cd $1
+    return 0
+  fi
+
+  local DRUPAL_VERSION=$(_dversion $DRUPAL_ROOT)
+
+  # Quick search in predefined list of Drupal directories.
+  for DIR in $(_dcd_dirs $DRUPAL_VERSION); do
     if [ -d "$DRUPAL_ROOT/$DIR/$1" ]; then
       cd $DRUPAL_ROOT/$DIR/$1
       return 0
     fi
   done
+
+  # Deep search.
+  local DIR;
+  if [ $DRUPAL_VERSION = 8 ]; then
+    DIR=$(find $DRUPAL_ROOT/modules $DRUPAL_ROOT/themes $DRUPAL_ROOT/profiles -path *tests -prune -o -path '*/'$1'.info.yml' -printf '%h\n')
+  elif [ $DRUPAL_VERSION = 7 -o $DRUPAL_VERSION = 6 ]; then
+    DIR=$(find $DRUPAL_ROOT/sites/all/modules $DRUPAL_ROOT/sites/all/themes $DRUPAL_ROOT/profiles -path *tests -prune -o -path '*/'$1'.info' -printf '%h\n')
+  fi
+
+  if [ ! -z $DIR ]; then
+    cd $DIR
+    return 0
+  fi
 
   _derror "No such directory $1."
   return 1
@@ -345,16 +374,15 @@ function _derror {
 }
 
 #-------------------------------------------------------------------------------
-# Finds Drupal dirs to navigate.
+# Return common Drupal directories to navigate.
 #
 # @internal
 #-------------------------------------------------------------------------------
 function _dcd_dirs {
-  local DIRS='sites sites/all all sites/default default'
-  [ $1 = 8 ] && DIRS="$DIRS modules themes profiles modules/contrib modules/custom profiles/modules profiles/modules/contrib profiles/modules/custom core/modules core/themes core/profiles"
-  [ $1 = 7 -o $1 = 6 ] && DIRS="$DIRS sites/all/modules sites/all/modules/contrib sites/all/modules/custom sites/all/modules/features sites/all/themes modules themes profiles profiles/modules profiles/modules/contrib profiles/modules/custom profiles/modules/features"
-  DIRS="$DIRS ."
-  echo $DIRS
+  local DIRS='. sites sites/all all sites/default default'
+  [ $1 = 8 ] && DIRS="$DIRS modules themes profiles modules/contrib modules/custom core/modules core/themes core/profiles"
+  [ $1 = 7 -o $1 = 6 ] && DIRS="$DIRS sites/all/modules sites/all/themes modules themes profiles sites/all"
+  echo "$DIRS .."
 }
 
 #-------------------------------------------------------------------------------
