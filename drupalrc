@@ -8,27 +8,27 @@
 # Prints Drupal root directory.
 #-------------------------------------------------------------------------------
 function droot {
-  local dir=$([ -n "$1" ] && readlink -f "$1" || pwd)
+  local DIR=$([ -n "$1" ] && readlink -f "$1" || pwd)
   while true; do
-    if [ "$dir" == '/' ]; then
+    if [ "$DIR" == '/' ]; then
       return 1;
     fi
     
-    if _dversion $dir > /dev/null; then
-      echo $dir
+    if _dversion $DIR > /dev/null; then
+      echo $DIR
       return 0
     fi
     
-    local droot
-    for sub_dir in www docroot web htdocs public; do
-      droot=$dir/$sub_dir
-      if _dversion $droot > /dev/null; then
-        echo $droot
+    local DRUPAL_ROOT
+    for SUB_DIR in www docroot web htdocs public; do
+      DRUPAL_ROOT=$DIR/$SUB_DIR
+      if _dversion $DRUPAL_ROOT > /dev/null; then
+        echo $DRUPAL_ROOT
         return 0
       fi
     done
 
-    dir=$(dirname $dir)
+    DIR=$(dirname $DIR)
   done
 }
 
@@ -36,20 +36,20 @@ function droot {
 # Quick navigation between Drupal directories.
 #-------------------------------------------------------------------------------
 function dcd {
-  local drupal_root=$(droot)
-  if [ -z "$drupal_root" ]; then
+  local DRUPAL_ROOT=$(droot)
+  if [ -z "$DRUPAL_ROOT" ]; then
     _derror 'No Drupal installation was found.'
     return 1
   fi
 
   if [ -z "$1" ]; then
-    cd $drupal_root
+    cd $DRUPAL_ROOT
     return 0;
   fi
 
-  for dir in $(_dcd_dirs $(_dversion $drupal_root)); do
-    if [ -d "$drupal_root/$dir/$1" ]; then
-      cd $drupal_root/$dir/$1
+  for DIR in $(_dcd_dirs $(_dversion $DRUPAL_ROOT)); do
+    if [ -d "$DRUPAL_ROOT/$DIR/$1" ]; then
+      cd $DRUPAL_ROOT/$DIR/$1
       return 0
     fi
   done
@@ -63,33 +63,33 @@ function dcd {
 #-------------------------------------------------------------------------------
 function dl {
 
-  local drupal_root=$(droot)
-  if [ -z "$drupal_root" ]; then
+  local DRUPAL_ROOT=$(droot)
+  if [ -z "$DRUPAL_ROOT" ]; then
     _derror 'No Drupal installation was found.'
     return 1;
   fi
 
   if [ "$1" = '--enable' ]; then
-    local enable=1
+    local ENABLE=1
     shift 1
   fi
 
-  local drupal_version=$(_dversion $drupal_root)
-  local projects=${@:-$(_dpeco $drupal_version)}
-  if [ -z "$projects" ]; then
+  local DRUPAL_VERSION=$(_dversion $DRUPAL_ROOT)
+  local PROJECTS=${@:-$(_dpeco $DRUPAL_VERSION)}
+  if [ -z "$PROJECTS" ]; then
     _derror 'Missing project name.'
     return 1;
   fi
 
-  if [ $drupal_version = 8 ]; then
+  if [ $DRUPAL_VERSION = 8 ]; then
     echo Starting composer, this may take some time...
-    composer require -d $drupal_root $(echo $projects | sed 's/\</drupal\//g')
+    composer require -d $DRUPAL_ROOT $(echo $PROJECTS | sed 's/\</drupal\//g')
   else
-    drush dl "$projects"
+    drush dl "$PROJECTS"
   fi
 
-  if [ "$?" -a -n "$enable" ]; then
-    drush en "$projects"
+  if [ "$?" -a -n "$ENABLE" ]; then
+    drush en "$PROJECTS"
   fi
 }
 
@@ -104,8 +104,8 @@ function dle {
 # Rebuilds Drupal caches.
 #-------------------------------------------------------------------------------
 function dcr {
-  local drupal_root=$(droot)
-  if [ -n "$drupal_root" ] && [ $(_dversion $drupal_root) = 8 ]; then
+  local DRUPAL_ROOT=$(droot)
+  if [ -n "$DRUPAL_ROOT" ] && [ $(_dversion $DRUPAL_ROOT) = 8 ]; then
     drush cache-rebuild
   else
     # Clear the cache even no Drupal installation was found. Drush may need this
@@ -118,14 +118,14 @@ function dcr {
 # Opens Drupal configuration files in editor.
 #-------------------------------------------------------------------------------
 function dconf {
-  local drupal_root=$(droot)
-  if [ -z "$drupal_root" ]; then
+  local DRUPAL_ROOT=$(droot)
+  if [ -z "$DRUPAL_ROOT" ]; then
     _derror 'No Drupal installation was found.'
     return 1;
   fi
-  local file=$drupal_root/sites/default/${1-settings.php}
-  if [ -f $file ]; then
-    ${VISUAL-${EDITOR-vi}} $file
+  local FILE=$DRUPAL_ROOT/sites/default/${1-settings.php}
+  if [ -f $FILE ]; then
+    ${VISUAL-${EDITOR-vi}} $FILE
     return $?
   else
     return 1
@@ -136,20 +136,20 @@ function dconf {
 # Executes scripts from vendor/bin directory.
 #-------------------------------------------------------------------------------
 function dbin {
-  local drupal_root=$(droot)
-  if [ -z "$drupal_root" ]; then
+  local DRUPAL_ROOT=$(droot)
+  if [ -z "$DRUPAL_ROOT" ]; then
     _derror 'Drupal installation was not found.'
     return 1;
   elif [ -z "$1" ]; then
     _derror 'No file specified.'
     return 1;
   else
-    local file=$(_dvendor $drupal_root)/bin/$1
-    if [ ! -f $file ]; then
+    local FILE=$(_dvendor $DRUPAL_ROOT)/bin/$1
+    if [ ! -f $FILE ]; then
       _derror 'No such file.'
       return 1;
     else
-      $file "${@:2}"
+      $FILE "${@:2}"
       return $?
     fi
   fi
@@ -159,11 +159,11 @@ function dbin {
 # Executes Drupal console.
 #-------------------------------------------------------------------------------
 function drupal {
-  local drupal_root=$(droot)
-  if [ -n "$drupal_root" ] && [ $(_dversion $drupal_root) = 8 ]; then
-    local file=$(_dvendor $drupal_root)/bin/drupal
-    if [ -f $file ]; then
-      $file "$@"
+  local DRUPAL_ROOT=$(droot)
+  if [ -n "$DRUPAL_ROOT" ] && [ $(_dversion $DRUPAL_ROOT) = 8 ]; then
+    local FILE=$(_dvendor $DRUPAL_ROOT)/bin/drupal
+    if [ -f $FILE ]; then
+      $FILE "$@"
       return $?
     else
       _derror 'Drupal console is not installed.'
@@ -179,11 +179,11 @@ function drupal {
 # Executes Drush.
 #-------------------------------------------------------------------------------
 function drush {
-  local drupal_root=$(droot)
-  if [ -n "$drupal_root" ] && [ $(_dversion $drupal_root) = 8 ]; then
-    local file=$(_dvendor $drupal_root)/bin/drush
-    if [ -f $file ]; then
-      $file "$@"
+  local DRUPAL_ROOT=$(droot)
+  if [ -n "$DRUPAL_ROOT" ] && [ $(_dversion $DRUPAL_ROOT) = 8 ]; then
+    local FILE=$(_dvendor $DRUPAL_ROOT)/bin/drush
+    if [ -f $FILE ]; then
+      $FILE "$@"
       return $?
     else
       _derror 'Drush is not installed.'
@@ -199,11 +199,11 @@ function drush {
 # Executes PHP code sniffer using Drupal standards.
 #-------------------------------------------------------------------------------
 function drupalcs {
-  local drupal_root=$(droot)
-  if [ -n "$drupal_root" ] && [ $(_dversion $drupal_root) = 8 ]; then
-    local file=$(_dvendor $drupal_root)/bin/phpcs
-    if [ -f $file ]; then
-      $file --standard=Drupal,DrupalPractice "$@"
+  local DRUPAL_ROOT=$(droot)
+  if [ -n "$DRUPAL_ROOT" ] && [ $(_dversion $DRUPAL_ROOT) = 8 ]; then
+    local FILE=$(_dvendor $DRUPAL_ROOT)/bin/phpcs
+    if [ -f $FILE ]; then
+      $FILE --standard=Drupal,DrupalPractice "$@"
       return $?
     else
       _derror 'PHP code sniffer is not installed.'
@@ -220,15 +220,15 @@ function drupalcs {
 # Runs PHPUnit tests.
 #-------------------------------------------------------------------------------
 function dunit {
-  local drupal_root=$(droot)
-  if [ -z "$drupal_root" ]; then
+  local DRUPAL_ROOT=$(droot)
+  if [ -z "$DRUPAL_ROOT" ]; then
     _derror 'No Drupal installation was found.'
     return 1
   fi
 
-  local file=$(_dvendor $drupal_root)/bin/phpunit
-  if [ -f $file ]; then
-    sudo -uwww-data $file -c $drupal_root/core $@
+  local FILE=$(_dvendor $DRUPAL_ROOT)/bin/phpunit
+  if [ -f $FILE ]; then
+    sudo -uwww-data $FILE -c $DRUPAL_ROOT/core $@
   else
     _derror 'PHPUnit was not found.'
     return 1
@@ -239,52 +239,52 @@ function dunit {
 # Runs Drupal tests.
 #-------------------------------------------------------------------------------
 function dtest {
-  local drupal_root=$(droot)
-  if [ -z "$drupal_root" ]; then
+  local DRUPAL_ROOT=$(droot)
+  if [ -z "$DRUPAL_ROOT" ]; then
     _derror 'No Drupal installation was found.'
     return 1
   fi
 
-  local options='--color --concurrency 31'
+  local OPTIONS='--color --concurrency 31'
   if [[ $* != *--url* ]]; then
-    local test_url=$(sed -ne "s/\$settings\['test_url'\] = '\(.*\)';/\1/p" $drupal_root/sites/default/settings.local.php)
+    local test_url=$(sed -ne "s/\$settings\['test_url'\] = '\(.*\)';/\1/p" $DRUPAL_ROOT/sites/default/settings.local.php)
     if [ -n "$test_url" ]; then
-      options+=" --url $test_url";
+      OPTIONS+=" --url $test_url";
     else
       _derror 'URL option is required.'
       return 1
     fi
   fi
 
-  sudo -uwww-data php $drupal_root/$([ $(_dversion $drupal_root) = 8 ] && echo 'core/')scripts/run-tests.sh $options "$@"
+  sudo -uwww-data php $DRUPAL_ROOT/$([ $(_dversion $DRUPAL_ROOT) = 8 ] && echo 'core/')scripts/run-tests.sh $OPTIONS "$@"
 }
 
 #-------------------------------------------------------------------------------
 # Prepares sites/default directory for Drupal installation.
 #-------------------------------------------------------------------------------
 function dready {
-  local drupal_root=$(droot)
-  if [ -n "$drupal_root" ]; then
-      local dir=$drupal_root/sites/default
-      if [ -d $dir/files ]; then
+  local DRUPAL_ROOT=$(droot)
+  if [ -n "$DRUPAL_ROOT" ]; then
+      local DIR=$DRUPAL_ROOT/sites/default
+      if [ -d $DIR/files ]; then
       read -p 'Remove sites/default/files directory? '
       if [[ $REPLY =~ ^[Yy]$ ]]; then
-        rm -r $dir/files
+        rm -r $DIR/files
       else
         return 0
       fi
     fi
-    mkdir -m777 $dir/files
-    if [ -f $dir/settings.php ]; then
+    mkdir -m777 $DIR/files
+    if [ -f $DIR/settings.php ]; then
       read -p 'Remove sites/default/settings.php file? '
       if [[ $REPLY =~ ^[Yy]$ ]]; then
-        rm $dir/settings.php
+        rm $DIR/settings.php
       else
         return 0
       fi
     fi
-    cp $dir/{default.,}settings.php &&
-    chmod 777 $dir/settings.php
+    cp $DIR/{default.,}settings.php &&
+    chmod 777 $DIR/settings.php
   else
     _derror 'No Drupal installation was found.'
     return 1;
@@ -349,11 +349,11 @@ function _derror {
 # @internal
 #-------------------------------------------------------------------------------
 function _dcd_dirs {
-  local dirs='sites sites/all all sites/default default'
-  [ $1 = 8 ] && dirs="$dirs modules themes profiles modules/contrib modules/custom profiles/modules profiles/modules/contrib profiles/modules/custom core/modules core/themes core/profiles"
-  [ $1 = 7 -o $1 = 6 ] && dirs="$dirs sites/all/modules sites/all/modules/contrib sites/all/modules/custom sites/all/modules/features sites/all/themes modules themes profiles profiles/modules profiles/modules/contrib profiles/modules/custom profiles/modules/features"
-  dirs="$dirs ."
-  echo $dirs
+  local DIRS='sites sites/all all sites/default default'
+  [ $1 = 8 ] && DIRS="$DIRS modules themes profiles modules/contrib modules/custom profiles/modules profiles/modules/contrib profiles/modules/custom core/modules core/themes core/profiles"
+  [ $1 = 7 -o $1 = 6 ] && DIRS="$DIRS sites/all/modules sites/all/modules/contrib sites/all/modules/custom sites/all/modules/features sites/all/themes modules themes profiles profiles/modules profiles/modules/contrib profiles/modules/custom profiles/modules/features"
+  DIRS="$DIRS ."
+  echo $DIRS
 }
 
 #-------------------------------------------------------------------------------
@@ -363,11 +363,11 @@ function _dcd_dirs {
 # @see https://github.com/peco/peco
 #-------------------------------------------------------------------------------
 function _dpeco {
-  projects_file=/usr/share/drupal-projects/d$1.txt
-  if hash peco 2>/dev/null && [ -f $projects_file ]; then
-    project=$(cat $projects_file | peco)
-    if [ -n "$project" ]; then
-      echo $project
+  PROJECTS_FILE=/usr/share/drupal-projects/d$1.txt
+  if hash peco 2>/dev/null && [ -f $PROJECTS_FILE ]; then
+    local PROJECT=$(cat $PROJECTS_FILE | peco)
+    if [ -n "$PROJECT" ]; then
+      echo $PROJECT
       return 0
     fi
   fi
