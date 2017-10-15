@@ -264,9 +264,12 @@ function dtest {
 
   local OPTIONS='--color --concurrency 31'
   if [[ $* != *--url* ]]; then
-    local test_url=$(sed -ne "s/\$settings\['test_url'\] = '\(.*\)';/\1/p" $DRUPAL_ROOT/sites/default/settings.local.php)
-    if [ -n "$test_url" ]; then
-      OPTIONS+=" --url $test_url";
+    local FILE=$DRUPAL_ROOT/sites/default/settings.local.php
+    if [ -f $FILE ]; then
+      local TEST_URL=$(sed -ne "s/\$settings\['test_url'\] = '\(.*\)';/\1/p" $FILE)
+    fi
+    if [ -n "$TEST_URL" ]; then
+      OPTIONS+=" --url $TEST_URL";
     else
       _derror 'URL option is required.'
       return 1
@@ -343,7 +346,7 @@ function _dversion {
 function _dvendor {
   if [ -d $1/vendor ]; then
     readlink -f $1/vendor
-  # If the site was built using Drupal composer the location is different.
+  # Vendor directory can be located outside document root.
   elif [ -d $1/../vendor ]; then
     readlink -f $1/../vendor
   else
