@@ -262,7 +262,7 @@ function dtest {
     return 1
   fi
 
-  local OPTIONS='--color --suppress-deprecations --concurrency 31'
+  local OPTIONS='--color --concurrency 31 --suppress-deprecations --sqlite /tmp/simpletest.sqlite'
   if [[ $* != *--url* ]]; then
     local FILE=$DRUPAL_ROOT/sites/default/settings.local.php
     if [ -f $FILE ]; then
