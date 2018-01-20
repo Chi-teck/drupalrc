@@ -245,7 +245,7 @@ function dunit {
 
   local FILE=$(_dvendor $DRUPAL_ROOT)/bin/phpunit
   if [ -f $FILE ]; then
-    sudo -uwww-data $FILE -c $DRUPAL_ROOT/core $@
+    sudo -uwww-data -E $FILE -c $DRUPAL_ROOT/core $@
   else
     _derror 'PHPUnit was not found.'
     return 1
@@ -262,7 +262,7 @@ function dtest {
     return 1
   fi
 
-  local OPTIONS='--color --concurrency 31'
+  local OPTIONS='--color --suppress-deprecations --concurrency 31'
   if [[ $* != *--url* ]]; then
     local FILE=$DRUPAL_ROOT/sites/default/settings.local.php
     if [ -f $FILE ]; then
