@@ -221,7 +221,8 @@ function drush {
     fi
   fi
   # Run global Drush.
-  /usr/local/bin/drush --root=$DRUPAL_ROOT "$@"
+  local OPTIONS=$([[ "$@" == *@* ]] || echo "--root=$DRUPAL_ROOT")
+  /usr/local/bin/drush $OPTIONS "$@"
   return $?
 }
 
