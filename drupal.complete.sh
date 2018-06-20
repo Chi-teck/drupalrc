@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # DCD completion.
 #-------------------------------------------------------------------------------
-_dcd() {
+_complete_dcd() {
   COMPREPLY=()
 
   # Complete only fist argument.
@@ -22,12 +22,12 @@ _dcd() {
   local CUR="${COMP_WORDS[COMP_CWORD]}"
   COMPREPLY=( $(compgen -W "${SUGGESTIONS}" -- ${CUR}) )
 }
-complete -F _dcd dcd
+complete -F _complete_dcd dcd
 
 #-------------------------------------------------------------------------------
 # DL and DLE completion.
 #-------------------------------------------------------------------------------
-_dl() {
+_complete_dl() {
   COMPREPLY=()
 
   local DRUPAL_ROOT=$(droot)
@@ -49,13 +49,13 @@ _dl() {
   local CUR="${COMP_WORDS[COMP_CWORD]}"
   COMPREPLY=( $(compgen -W "${SUGGESTIONS}" -- ${CUR}) )
 }
-complete -F _dl dl
-complete -F _dl dle
+complete -F _complete_dl dl
+complete -F _complete_dl dle
 
 #-------------------------------------------------------------------------------
 # DCONF completion.
 #-------------------------------------------------------------------------------
-_dconf() {
+_complete_dconf() {
   COMPREPLY=()
 
   # Complete only fist argument.
@@ -73,12 +73,12 @@ _dconf() {
   local CUR="${COMP_WORDS[COMP_CWORD]}"
   COMPREPLY=( $(compgen -W "${SUGGESTIONS}" -- ${CUR}) )
 }
-complete -F _dconf dconf
+complete -F _complete_dconf dconf
 
 #-------------------------------------------------------------------------------
 # DBIN completion.
 #-------------------------------------------------------------------------------
-_dbin() {
+_complete_dbin() {
   COMPREPLY=()
 
   # Complete only fist argument.
@@ -91,16 +91,21 @@ _dbin() {
     return 1
   fi
 
-  local SUGGESTIONS=$(find $(_dvendor $DRUPAL_ROOT)/bin -mindepth 1 -maxdepth 1 -executable -exec basename {} \;)
+  local BIN_DIR=$(_dbin $DRUPAL_ROOT)
+  if [ -z "$BIN_DIR" ]; then
+    return 1
+  fi
+
+  local SUGGESTIONS=$(find $BIN_DIR -mindepth 1 -maxdepth 1 -executable -exec basename {} \;)
   local CUR="${COMP_WORDS[COMP_CWORD]}"
   COMPREPLY=( $(compgen -W "${SUGGESTIONS}" -- ${CUR}) )
 }
-complete -F _dbin dbin
+complete -F _complete_dbin dbin
 
 #-------------------------------------------------------------------------------
 # DTEST completion.
 #-------------------------------------------------------------------------------
-_dtest() {
+_complete_dtest() {
   COMPREPLY=()
 
   local DRUPAL_ROOT=$(droot)
@@ -122,13 +127,12 @@ _dtest() {
 
   COMPREPLY=( $(compgen -W "${SUGGESTIONS}" -- ${CUR}) )
 }
-complete -F _dtest dtest
-
+complete -F _complete_dtest dtest
 
 #-------------------------------------------------------------------------------
 # DUNIT completion.
 #-------------------------------------------------------------------------------
-_dunit() {
+_complete_dunit() {
   COMPREPLY=()
 
   local DRUPAL_ROOT=$(droot)
@@ -136,7 +140,7 @@ _dunit() {
     return 1
   fi
 
-  local FILE=$(_dvendor $DRUPAL_ROOT)/bin/phpunit
+  local FILE=$(_dbin $DRUPAL_ROOT)/phpunit
   if [ ! -f $FILE ]; then
     return 1
   fi
@@ -150,4 +154,4 @@ _dunit() {
   local SUGGESTIONS=$($FILE --help | grep -oE ' --[a-z-]+')
   COMPREPLY=( $(compgen -W "${SUGGESTIONS}" -- ${CUR}) )
 }
-complete -fF _dunit dunit
+complete -fF _complete_dunit dunit

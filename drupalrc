@@ -171,17 +171,21 @@ function dbin {
     _derror 'Drupal installation was not found.'
     return 1;
   elif [ -z "$1" ]; then
-    _derror 'No file specified.'
+    _derror 'No file was specified.'
     return 1;
   else
-    local FILE=$(_dvendor $DRUPAL_ROOT)/bin/$1
+    local BIN_DIR=$(_dbin $DRUPAL_ROOT)
+    if [ ! -d "$BIN_DIR" ]; then
+      _derror 'No bin directory was found.'
+      return 1;
+    fi
+    local FILE=$BIN_DIR/$1
     if [ ! -f $FILE ]; then
       _derror 'No such file.'
       return 1;
-    else
-      $FILE "${@:2}"
-      return $?
     fi
+    $FILE "${@:2}"
+    return $?
   fi
 }
 
@@ -191,7 +195,7 @@ function dbin {
 function drupal {
   local DRUPAL_ROOT=$(droot)
   if [ -n "$DRUPAL_ROOT" ] && [ $(_dversion $DRUPAL_ROOT) = 8 ]; then
-    local FILE=$(_dvendor $DRUPAL_ROOT)/bin/drupal
+    local FILE=$(_dbin $DRUPAL_ROOT)/drupal
     if [ -f $FILE ]; then
       $FILE "$@"
       return $?
@@ -211,7 +215,7 @@ function drupal {
 function drush {
   local DRUPAL_ROOT=$(droot)
   if [ -n "$DRUPAL_ROOT" ] && [ $(_dversion $DRUPAL_ROOT) = 8 ]; then
-    local FILE=$(_dvendor $DRUPAL_ROOT)/bin/drush
+    local FILE=$(_dbin $DRUPAL_ROOT)/drush
     if [ -f $FILE ]; then
       $FILE "$@"
       return $?
@@ -244,7 +248,7 @@ function dunit {
     return 1
   fi
 
-  local FILE=$(_dvendor $DRUPAL_ROOT)/bin/phpunit
+  local FILE=$(_dbin $DRUPAL_ROOT)/phpunit
   if [ -f $FILE ]; then
     sudo -uwww-data -E $FILE -c $DRUPAL_ROOT/core $@
   else
@@ -392,4 +396,24 @@ function _dpeco {
     fi
   fi
   return 1
+}
+
+#-------------------------------------------------------------------------------
+# Prints path to bin directory.
+#
+# @internal
+#-------------------------------------------------------------------------------
+function _dbin {
+  local DRUPAL_ROOT=$1
+  local BIN_DIR=$DRUPAL_ROOT/bin
+  if [ ! -d $BIN_DIR ]; then
+    BIN_DIR=$DRUPAL_ROOT/../bin
+    if [ ! -d $BIN_DIR ]; then
+      BIN_DIR=$(_dvendor $DRUPAL_ROOT)/bin
+      if [ ! -d $BIN_DIR ]; then
+        return 1;
+      fi
+    fi
+  fi
+  echo $BIN_DIR;
 }
