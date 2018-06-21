@@ -14,10 +14,17 @@ _complete_dcd() {
     return 1
   fi
 
-  local SUGGESTIONS
-  for dir in $(_dcd_dirs $(_dversion $DRUPAL_ROOT)); do
-    [ -d $DRUPAL_ROOT/$dir ] && SUGGESTIONS="$SUGGESTIONS "$(find $DRUPAL_ROOT/$dir -maxdepth 1 -type d -name '[^.]*' -exec basename {} \;)
-  done
+  local DRUPAL_VERSION=$(_dversion $DRUPAL_ROOT)
+
+  if [ $DRUPAL_VERSION -eq 8 ]; then
+    DIRS="$DRUPAL_ROOT/core/modules $DRUPAL_ROOT/core/themes $DRUPAL_ROOT/core/profiles $DRUPAL_ROOT/modules $DRUPAL_ROOT/themes $DRUPAL_ROOT/profiles"
+    FILES=$(find $DIRS \( -path '*src' -o -path '*tests/*' -o -path '*.git' -o -path '*config/*' -o -path '*js/*' -o -path '*css/'* -o -path '*templates' -o -path '*migrations' \) -prune -o -name '*.info.yml' -print)
+  fi
+
+  local SUGGESTIONS=$(_dcd_dirs $DRUPAL_VERSION)
+  for FILE in $FILES; do
+    SUGGESTIONS=$SUGGESTIONS" "$(echo $FILE | awk -F  '/' '{ print $(NF-1) }')
+  done;
 
   local CUR="${COMP_WORDS[COMP_CWORD]}"
   COMPREPLY=( $(compgen -W "${SUGGESTIONS}" -- ${CUR}) )

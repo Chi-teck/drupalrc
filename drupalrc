@@ -73,9 +73,8 @@ function dcd {
   # Deep search.
   local DIR;
   if [ $DRUPAL_VERSION = 8 ]; then
-    DIR=$(find $DRUPAL_ROOT/modules $DRUPAL_ROOT/themes $DRUPAL_ROOT/profiles -path *tests -prune -o -path '*/'$1'.info.yml' -printf '%h\n')
-  elif [ $DRUPAL_VERSION = 7 -o $DRUPAL_VERSION = 6 ]; then
-    DIR=$(find $DRUPAL_ROOT/sites/all/modules $DRUPAL_ROOT/sites/all/themes $DRUPAL_ROOT/profiles -path *tests -prune -o -path '*/'$1'.info' -printf '%h\n')
+    TARGET_DIRS="$DRUPAL_ROOT/core/modules $DRUPAL_ROOT/core/themes $DRUPAL_ROOT/core/profiles $DRUPAL_ROOT/modules $DRUPAL_ROOT/themes $DRUPAL_ROOT/profiles"
+    DIR=$(find $TARGET_DIRS \( -path '*src' -o -path '*tests/*' -o -path '*.git' -o -path '*config/*' -o -path '*js/*' -o -path '*css/'* -o -path '*templates' -o -path '*migrations' \) -prune -o -path '*/'$1'/*.info.yml' -printf '%h\n')
   fi
 
   if [ ! -z $DIR ]; then
@@ -111,7 +110,7 @@ function dl {
   fi
 
   if [ $DRUPAL_VERSION = 8 ]; then
-    echo Starting composer, this may take some time...
+    echo 'Starting composer, this may take a while...'
     local VENDOR_DIR=$(_dvendor $DRUPAL_ROOT)
     composer require -d $VENDOR_DIR/.. $(echo $PROJECTS | sed 's/\</drupal\//g')
   else
