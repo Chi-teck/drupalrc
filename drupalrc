@@ -233,7 +233,7 @@ function drush {
 # Executes PHP code sniffer using Drupal standards.
 #-------------------------------------------------------------------------------
 function drupalcs {
-  phpcs -p --standard=Drupal,DrupalPractice "$@"
+  phpcs --colors -p --standard=Drupal,DrupalPractice "$@"
   return $?
 }
 
