@@ -10,7 +10,6 @@ url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master &&
 wget -O $HOME/.drupalrc $url/drupalrc && echo source $HOME/.drupalrc >> $HOME/.bashrc &&
 wget -O $HOME/.drupal.complete.sh $url/drupal.complete.sh &&
 echo source $HOME/.drupal.complete.sh >> $HOME/.bash_completion &&
-mkdir $HOME/.drupal-projects && wget -P $HOME/.drupal-projects $url/drupal-projects/d{6,7,8}.txt
 ```
 
 ```bash
@@ -18,7 +17,6 @@ mkdir $HOME/.drupal-projects && wget -P $HOME/.drupal-projects $url/drupal-proje
 url=https://raw.githubusercontent.com/Chi-teck/drupalrc/master &&
 wget -O /etc/drupalrc $url/drupalrc && echo source /etc/drupalrc >> /etc/bash.bashrc &&
 wget -O /etc/bash_completion.d/drupal.complete.sh $url/drupal.complete.sh &&
-mkdir /usr/share/drupal-projects && wget -P /usr/share/drupal-projects $url/drupal-projects/d{6,7,8}.txt
 ```
 
 Log out and log in again for the changes to take effect.
@@ -39,15 +37,15 @@ dcd # Drupal root directory
 ```
 
 ## dl
-Download Drupal projects using Composer or Drush (depends on Drupal version).
+Download Drupal projects using Composer.
 ```bash
 dl admin_toolbar token feeds
 ```
 ## dle
-Download and immediately enable Drupal modules.
+Download and enable Drupal modules.
 
 ## dcr
-Rebuild Drupal caches using `drush cr` or `drush cc all` (depends on Drupal version).
+Rebuild Drupal caches using `drush cr`.
 
 ## dconf
 Open specified configuration file in default editor.
@@ -63,8 +61,11 @@ Execute scripts from _vendor/bin_ directory.
 dbin phpcbf --help
 ```
 
-## drupal
-Launcher for Drupal console.
+## dcomposer
+Launcher for Composer.
+```bash
+dcomposer show
+```
 
 ## drush
 Launcher for Drush.
@@ -79,12 +80,6 @@ drupalcs modules/custom/foo
 Launcher for PHPUnit.
 ```bash
 dunit tests/src/Functional/SomeTest.php
-```
-
-## dtest
-Launcher for _run-scripts.sh_.
-```bash
-dtest --url http://localhost/drupal . # The URL can be configured in settings.local.php.
 ```
 
 ## dready
