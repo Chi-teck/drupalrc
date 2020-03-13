@@ -31,10 +31,10 @@ function droot {
     fi
     
     local DRUPAL_ROOT
-    for SUB_DIR in */; do
+    for SUB_DIR in www docroot web htdocs public public_html html; do
       DRUPAL_ROOT=$DIR/$SUB_DIR
-      if _dversion "$DRUPAL_ROOT" > /dev/null; then
-        echo "$DRUPAL_ROOT"
+      if _dversion $DRUPAL_ROOT > /dev/null; then
+        echo $DRUPAL_ROOT
         return 0
       fi
     done
