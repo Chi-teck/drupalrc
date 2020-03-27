@@ -45,7 +45,7 @@ _complete_dcd() {
   local CUR="${COMP_WORDS[COMP_CWORD]}"
   COMPREPLY=( $(compgen -W "$SUGGESTIONS" -- "$CUR") )
 }
-complete -o default -F _complete_dcd dcd
+complete -o plusdirs -F _complete_dcd dcd
 
 #-------------------------------------------------------------------------------
 # dconf completion.
