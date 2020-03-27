@@ -45,7 +45,7 @@ _complete_dcd() {
   local CUR="${COMP_WORDS[COMP_CWORD]}"
   COMPREPLY=( $(compgen -W "$SUGGESTIONS" -- "$CUR") )
 }
-complete -F _complete_dcd dcd
+complete -o default -F _complete_dcd dcd
 
 #-------------------------------------------------------------------------------
 # dconf completion.
@@ -67,16 +67,20 @@ _complete_dconf() {
   if ! PROJECT_ROOT=$(_dproject "$DRUPAL_ROOT"); then
     return 1
   fi
+
   local SUGGESTIONS=$(find "$DRUPAL_ROOT"/sites/default -maxdepth 1 -type f -printf '%f\n')
   if [[ -f $PROJECT_ROOT/composer.json ]]; then
     SUGGESTIONS="$SUGGESTIONS composer.json"
   fi
+
   if [[ -f $PROJECT_ROOT/package.json ]]; then
     SUGGESTIONS="$SUGGESTIONS package.json"
   fi
+
   if [[ -f $PROJECT_ROOT/phpcs.xml ]]; then
     SUGGESTIONS="$SUGGESTIONS phpcs.xml"
   fi
+
   if [[ -f $PROJECT_ROOT/phpunit.xml ]]; then
     SUGGESTIONS="$SUGGESTIONS phpunit.xml"
   fi
@@ -110,7 +114,7 @@ _complete_dbin() {
   local CUR="${COMP_WORDS[COMP_CWORD]}"
   COMPREPLY=( $(compgen -W "$SUGGESTIONS" -- "$CUR") )
 }
-complete -F _complete_dbin dbin
+complete -o default -F _complete_dbin dbin
 
 #-------------------------------------------------------------------------------
 # dunit completion.
@@ -138,7 +142,7 @@ _complete_dunit() {
   local SUGGESTIONS=$($FILE --help | grep -oE ' --[a-z-]+')
   COMPREPLY=( $(compgen -W "$SUGGESTIONS" -- "$CUR") )
 }
-complete -F _complete_dunit dunit
+complete -o default -F _complete_dunit dunit
 
 #-------------------------------------------------------------------------------
 # dcomposer completion.
