@@ -9,7 +9,7 @@
 # shellcheck disable=SC2155
 
 #-------------------------------------------------------------------------------
-# Prints Drupal root directory.
+# Prints a path to Drupal root directory.
 #-------------------------------------------------------------------------------
 function droot {
   local DIR;
@@ -31,6 +31,7 @@ function droot {
     fi
     
     local DRUPAL_ROOT
+    # Check if Drupal resides in a sibling directory.
     for SUB_DIR in www docroot web htdocs public public_html html; do
       DRUPAL_ROOT=$DIR/$SUB_DIR
       if _dversion "$DRUPAL_ROOT" > /dev/null; then
@@ -103,6 +104,7 @@ function dcd {
     -path "*.git" -prune -o \
     -name "$1.info.yml"\
     -printf '%h\n')
+
   if [[ -n $DIR ]]; then
     cd "$DIR"
     return $?
@@ -401,6 +403,9 @@ function _dversion {
 #-------------------------------------------------------------------------------
 # Prints path to project root directory.
 #
+# @param 1
+#   Path to Drupal root directory.
+#
 # @internal
 #-------------------------------------------------------------------------------
 function _dproject {
@@ -433,7 +438,10 @@ function _dcd_dirs {
 }
 
 #-------------------------------------------------------------------------------
-# Prints path to bin directory.
+# Prints a path to bin directory.
+#
+# @param 1
+#   Path to Drupal root directory.
 #
 # @internal
 #-------------------------------------------------------------------------------
@@ -442,9 +450,9 @@ function _dbin {
   if ! PROJECT_ROOT=$(_dproject "$1"); then
     return 1
   fi
-  local BIN_DIR=$PROJECT_ROOT/bin
+  local BIN_DIR=$PROJECT_ROOT/vendor/bin
   if [[ ! -d $BIN_DIR ]]; then
-    BIN_DIR=$PROJECT_ROOT/vendor/bin
+    BIN_DIR=$PROJECT_ROOT/bin
     if [[ ! -d $BIN_DIR ]]; then
       return 1;
     fi
