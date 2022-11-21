@@ -39,18 +39,18 @@ dcd # Drupal root directory
 ```
 
 ## dl
-Download Drupal projects using Composer.
+Downloads Drupal projects using Composer.
 ```bash
 dl admin_toolbar token feeds
 ```
 ## dle
-Download and enable Drupal modules.
+Downloads and enables Drupal modules.
 
 ## dcr
-Rebuild Drupal caches using `drush cr`.
+Rebuilds Drupal caches using `drush cr`.
 
 ## dconf
-Open specified configuration file in default editor.
+Opens specified configuration file in default editor.
 ```bash
 dconf # settings.php
 dconf settings.local.php # settings.local.php
@@ -58,7 +58,7 @@ dconf services.yml # services.yml
 ```
 
 ## dbin
-Execute scripts from _vendor/bin_ directory.
+Executes scripts from _vendor/bin_ directory.
 ```bash
 dbin phpcbf --help
 ```
@@ -69,11 +69,14 @@ Launcher for Composer.
 dcomposer show
 ```
 
+## dcg
+Launcher for Drupal Code Generator.
+
 ## drush
 Launcher for Drush.
 
 ## drupalcs
-Check code against Drupal coding standards using PHP code sniffer.
+Checks the code against Drupal coding standards using PHP code sniffer.
 ```bash
 drupalcs modules/custom/foo
 ```
@@ -85,7 +88,7 @@ dunit tests/src/Functional/SomeTest.php
 ```
 
 ## dready
-Prepare _sites/default_ directory for new installation process.
+Prepares _sites/default_ directory for new installation process.
 
 ## License
 GNU General Public License, version 2.
