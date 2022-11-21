@@ -283,14 +283,27 @@ function drush {
 # Executes PHP code sniffer using Drupal standards.
 #-------------------------------------------------------------------------------
 function drupalcs {
+  local DRUPAL_ROOT
+  if ! DRUPAL_ROOT=$(droot); then
+    _derror 'Drupal installation was not found.'
+    return 1;
+  fi
+
+  local PHPCS=$(_dbin "$DRUPAL_ROOT")/phpcs
+  if [[ ! -f $PHPCS ]]; then
+    _derror 'PHP code sniffer is not installed.'
+    return 1
+  fi
+
   local STANDARD
   if [[ -f phpcs.xml ]]; then
     STANDARD=phpcs.xml
   else
     STANDARD=Drupal,DrupalPractice
   fi
+
   # Drupal coding standards needs to be installed globbaly.
-  phpcs --colors -p --standard=$STANDARD "$@"
+  $PHPCS --colors -sp --standard=$STANDARD "$@"
   return $?
 }
 
