@@ -183,20 +183,20 @@ function dconf {
     return 1;
   fi
 
-  local FILE=$DRUPAL_ROOT/sites/default/${1-settings.php}
-  if [[ ! -f $FILE ]]; then
+  local PHPSTAN=$DRUPAL_ROOT/sites/default/${1-settings.php}
+  if [[ ! -f $PHPSTAN ]]; then
     local PROJECT_ROOT
     if ! PROJECT_ROOT=$(_dproject "$DRUPAL_ROOT"); then
       _derror "Could not locate $1 file."
       return 1
     fi
-    FILE=$PROJECT_ROOT/$1
-    if [[ ! -f $FILE ]]; then
+    PHPSTAN=$PROJECT_ROOT/$1
+    if [[ ! -f $PHPSTAN ]]; then
       _derror "Could not locate $1 file."
       return 1
     fi
   fi
-  ${VISUAL-${EDITOR-vi}} "$FILE"
+  ${VISUAL-${EDITOR-vi}} "$PHPSTAN"
   return $?
 }
 
@@ -217,12 +217,12 @@ function dbin {
       _derror 'bin directory was not found.'
       return 1;
     fi
-    local FILE=$BIN_DIR/$1
-    if [[ ! -f $FILE ]]; then
+    local PHPSTAN=$BIN_DIR/$1
+    if [[ ! -f $PHPSTAN ]]; then
       _derror 'No such file.'
       return 1;
     fi
-    $FILE "${@:2}"
+    $PHPSTAN "${@:2}"
     return $?
   fi
 }
@@ -264,9 +264,9 @@ function drush {
 
   local DRUPAL_VERSION=$(_dversion "$DRUPAL_ROOT")
   if [[ DRUPAL_VERSION -ge 8 ]]; then
-    local FILE=$(_dbin "$DRUPAL_ROOT")/drush
-    if [[ -f $FILE ]]; then
-      $FILE "$@"
+    local PHPSTAN=$(_dbin "$DRUPAL_ROOT")/drush
+    if [[ -f $PHPSTAN ]]; then
+      $PHPSTAN "$@"
       return $?
     else
       _derror 'Drush is not installed on this site.'
@@ -322,13 +322,13 @@ function dcg {
     return 1;
   fi
 
-  local FILE=$(_dbin "$DRUPAL_ROOT")/dcg
-  if [[ ! -f $FILE ]]; then
+  local PHPSTAN=$(_dbin "$DRUPAL_ROOT")/dcg
+  if [[ ! -f $PHPSTAN ]]; then
     _derror 'DCG is not installed on this site.'
     return 1;
   fi
 
-  $FILE "$@"
+  $PHPSTAN "$@"
   return $?
 }
 
@@ -354,13 +354,44 @@ function dunit {
     return 1;
   fi
 
-  local FILE=$(_dbin "$DRUPAL_ROOT")/phpunit
-  if [[ ! -f $FILE ]]; then
+  local PHPSTAN=$(_dbin "$DRUPAL_ROOT")/phpunit
+  if [[ ! -f $PHPSTAN ]]; then
     _derror 'PHPUnit is not installed.'
     return 1
   fi
 
-  sudo -uwww-data -E "$FILE" -c "$DRUPAL_ROOT"/core "$@"
+  sudo -uwww-data -E "$PHPSTAN" -c "$DRUPAL_ROOT"/core "$@"
+}
+
+#-------------------------------------------------------------------------------
+# Runs PHPStan analyze tests.
+#-------------------------------------------------------------------------------
+function drupalphpstan {
+
+  if [[ $# -eq 0 ]]; then
+    _derror 'Missing path.'
+    return 1;
+  fi
+
+  local DRUPAL_ROOT
+  if ! DRUPAL_ROOT=$(droot); then
+    _derror 'Drupal installation was not found.'
+    return 1;
+  fi
+
+  local DRUPAL_VERSION=$(_dversion "$DRUPAL_ROOT")
+  if [[ $DRUPAL_VERSION -lt 8 ]]; then
+    _derror "Drupal $DRUPAL_VERSION is not supported."
+    return 1;
+  fi
+
+  local PHPSTAN=$(_dbin "$DRUPAL_ROOT")/phpstan
+  if [[ ! -f $PHPSTAN ]]; then
+    _derror 'PHPStan is not installed.'
+    return 1
+  fi
+
+  "$PHPSTAN" analyze -c "$DRUPAL_ROOT"/core/phpstan.neon.dist "$@"
 }
 
 #-------------------------------------------------------------------------------
