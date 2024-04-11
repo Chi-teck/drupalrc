@@ -190,7 +190,7 @@ function dconf {
       _derror "Could not locate $1 file."
       return 1
     fi
-    PHPSTAN=$PROJECT_ROOT/$1
+    FILE=$PROJECT_ROOT/$1
     if [[ ! -f $FILE ]]; then
       _derror "Could not locate $1 file."
       return 1
