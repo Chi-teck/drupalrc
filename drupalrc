@@ -366,8 +366,8 @@ function dunit {
 #-------------------------------------------------------------------------------
 # Runs PHPStan analyze.
 #-------------------------------------------------------------------------------
-alias d-phpstan="d-stan"
-function d-stan {
+alias d-stan="d-phpstan"
+function d-phpstan {
   if [[ $# -eq 0 ]]; then
     _derror 'Missing path.'
     return 1;
