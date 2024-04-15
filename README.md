@@ -81,6 +81,14 @@ Checks the code against Drupal coding standards using PHP code sniffer.
 drupalcs modules/custom/foo
 ```
 
+## d-phpcbf (d-cbf)
+
+Automatically tries to fix PHPCS issues using PHPCBF tool.
+
+```bash
+d-phpcbf modules/custom/foo
+```
+
 ## dunit
 Launcher for PHPUnit.
 ```bash
