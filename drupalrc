@@ -308,6 +308,33 @@ function drupalcs {
 }
 
 #-------------------------------------------------------------------------------
+# Runs PHPCBF tool.
+#-------------------------------------------------------------------------------
+alias d-cbf="d-phpcbf"
+function d-phpcbf {
+  local DRUPAL_ROOT
+  if ! DRUPAL_ROOT=$(droot); then
+    _derror 'Drupal installation was not found.'
+    return 1;
+  fi
+
+  local PHPCBF=$(_dbin "$DRUPAL_ROOT")/phpcbf
+  if [[ ! -f $PHPCBF ]]; then
+    _derror 'PHPCBF is not installed.'
+    return 1
+  fi
+
+  local STANDARD
+  if [[ -f phpcs.xml ]]; then
+    STANDARD=phpcs.xml
+  else
+    STANDARD=Drupal,DrupalPractice
+  fi
+
+  $PHPCBF --colors -sp --standard=$STANDARD "$@"
+}
+
+#-------------------------------------------------------------------------------
 # Runs Drupal Code Generator.
 #-------------------------------------------------------------------------------
 function dcg {
