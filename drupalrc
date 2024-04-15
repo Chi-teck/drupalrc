@@ -364,6 +364,37 @@ function dunit {
 }
 
 #-------------------------------------------------------------------------------
+# Runs PHPStan analyze.
+#-------------------------------------------------------------------------------
+alias d-stan="d-phpstan"
+function d-phpstan {
+  if [[ $# -eq 0 ]]; then
+    _derror 'Missing path.'
+    return 1;
+  fi
+
+  local DRUPAL_ROOT
+  if ! DRUPAL_ROOT=$(droot); then
+    _derror 'Drupal installation was not found.'
+    return 1;
+  fi
+
+  local DRUPAL_VERSION=$(_dversion "$DRUPAL_ROOT")
+  if [[ $DRUPAL_VERSION -lt 8 ]]; then
+    _derror "Drupal $DRUPAL_VERSION is not supported."
+    return 1;
+  fi
+
+  local PHPSTAN=$(_dbin "$DRUPAL_ROOT")/phpstan
+  if [[ ! -f $PHPSTAN ]]; then
+    _derror 'PHPStan is not installed.'
+    return 1
+  fi
+
+  "$PHPSTAN" analyze -c "$DRUPAL_ROOT"/core/phpstan.neon.dist "$@"
+}
+
+#-------------------------------------------------------------------------------
 # Prepares sites/default directory for Drupal installation.
 #-------------------------------------------------------------------------------
 function dready {
