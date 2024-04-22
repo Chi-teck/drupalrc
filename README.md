@@ -84,9 +84,6 @@ Launcher for PHPUnit.
 dunit tests/src/Functional/SomeTest.php
 ```
 
-## dready
-Prepares _sites/default_ directory for new installation process.
-
 ## d-phpstan (d-stan)
 
 Runs PHPStan analyze.
