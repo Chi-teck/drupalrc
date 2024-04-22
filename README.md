@@ -43,8 +43,6 @@ Downloads Drupal projects using Composer.
 ```bash
 dl admin_toolbar token feeds
 ```
-## dle
-Downloads and enables Drupal modules.
 
 ## dcr
 Rebuilds Drupal caches using `drush cr`.
@@ -62,15 +60,6 @@ Executes scripts from _vendor/bin_ directory.
 ```bash
 dbin phpcbf --help
 ```
-
-## dcomposer
-Launcher for Composer.
-```bash
-dcomposer show
-```
-
-## dcg
-Launcher for Drupal Code Generator.
 
 ## drush
 Launcher for Drush.

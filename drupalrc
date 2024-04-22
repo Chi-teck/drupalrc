@@ -148,13 +148,6 @@ function dl {
 }
 
 #-------------------------------------------------------------------------------
-# Downloads and enables Drupal modules.
-#-------------------------------------------------------------------------------
-function dle {
-  dl "$@" && drush en "$@"
-}
-
-#-------------------------------------------------------------------------------
 # Rebuilds Drupal caches.
 #-------------------------------------------------------------------------------
 function dcr {
@@ -225,31 +218,6 @@ function dbin {
     $FILE "${@:2}"
     return $?
   fi
-}
-
-#-------------------------------------------------------------------------------
-# Executes Composer.
-#-------------------------------------------------------------------------------
-function dcomposer {
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
-    return 1;
-  fi
-
-  local DRUPAL_VERSION=$(_dversion "$DRUPAL_ROOT")
-  if [[ $DRUPAL_VERSION -lt 8 ]]; then
-    _derror "Drupal $DRUPAL_VERSION is not supported."
-    return 1;
-  fi
-
-  local PROJECT_ROOT
-  if ! PROJECT_ROOT=$(_dproject "$DRUPAL_ROOT"); then
-    _derror 'composer.json was not found.'
-    return 1;
-  fi
-
-  composer --working-dir="$PROJECT_ROOT" "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -335,31 +303,6 @@ function d-phpcbf {
 }
 
 #-------------------------------------------------------------------------------
-# Runs Drupal Code Generator.
-#-------------------------------------------------------------------------------
-function dcg {
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
-    return 1;
-  fi
-
-  if [[ $(_dversion "$DRUPAL_ROOT") -lt 8 ]]; then
-    _derror 'Unsupported Drupal version.'
-    return 1;
-  fi
-
-  local FILE=$(_dbin "$DRUPAL_ROOT")/dcg
-  if [[ ! -f $FILE ]]; then
-    _derror 'DCG is not installed on this site.'
-    return 1;
-  fi
-
-  $FILE "$@"
-  return $?
-}
-
-#-------------------------------------------------------------------------------
 # Runs PHPUnit tests.
 #-------------------------------------------------------------------------------
 function dunit {
@@ -430,39 +373,6 @@ function d-phpstan {
   fi
 
   "$PHPSTAN" analyze "$CONFIGURATION" "$@"
-}
-
-#-------------------------------------------------------------------------------
-# Prepares sites/default directory for Drupal installation.
-#-------------------------------------------------------------------------------
-function dready {
-
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
-    return 1;
-  fi
-
-  local DIR=$DRUPAL_ROOT/sites/default
-  if [[ -d $DIR/files ]]; then
-    read -rp 'Remove sites/default/files directory? '
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      rm -r "$DIR"/files
-    else
-      return 0
-    fi
-  fi
-  mkdir -m777 "$DIR"/files
-
-  if [[ -f $DIR/settings.php ]]; then
-    read -rp 'Remove sites/default/settings.php file? '
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      rm "$DIR"/settings.php
-    else
-      return 0
-    fi
-  fi
-  cp "$DIR"/{default.,}settings.php && chmod 777 "$DIR"/settings.php
 }
 
 #-------------------------------------------------------------------------------
