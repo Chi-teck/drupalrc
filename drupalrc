@@ -418,7 +418,18 @@ function d-phpstan {
     return 1
   fi
 
-  "$PHPSTAN" analyze -c "$DRUPAL_ROOT"/core/phpstan.neon.dist "$@"
+  local CONFIGURATION
+  if [[ -f phpstan.neon ]]; then
+    CONFIGURATION="--configuration=phpstan.neon"
+  else
+    if [[ ! -f /tmp/drupalrc.phpstan.neon ]]; then
+      echo "Executing curl --output /tmp/drupalrc.phpstan.neon https://git.drupalcode.org/project/gitlab_templates/-/raw/main/assets/phpstan.neon"
+      curl --output /tmp/drupalrc.phpstan.neon https://git.drupalcode.org/project/gitlab_templates/-/raw/main/assets/phpstan.neon
+    fi
+    CONFIGURATION="--configuration=/tmp/drupalrc.phpstan.neon"
+  fi
+
+  "$PHPSTAN" analyze "$CONFIGURATION" "$@"
 }
 
 #-------------------------------------------------------------------------------

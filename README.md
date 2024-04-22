@@ -106,5 +106,9 @@ Runs PHPStan analyze.
 d-phpstan .
 ```
 
+> [!NOTE]
+> If the local `phpstan.neon` file is not found, a contrib version of the file 
+> from Drupal CI will be downloaded to a temporary directory.
+
 ## License
 GNU General Public License, version 2.
