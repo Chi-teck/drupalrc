@@ -423,8 +423,8 @@ function d-phpstan {
     CONFIGURATION="--configuration=phpstan.neon"
   else
     if [[ ! -f /tmp/drupalrc.phpstan.neon ]]; then
-      echo "Executing curl -output /tmp/drupalrc.phpstan.neon https://git.drupalcode.org/project/gitlab_templates/-/raw/main/assets/phpstan.neon"
-      curl -output /tmp/drupalrc.phpstan.neon https://git.drupalcode.org/project/gitlab_templates/-/raw/main/assets/phpstan.neon
+      echo "Executing curl --output /tmp/drupalrc.phpstan.neon https://git.drupalcode.org/project/gitlab_templates/-/raw/main/assets/phpstan.neon"
+      curl --output /tmp/drupalrc.phpstan.neon https://git.drupalcode.org/project/gitlab_templates/-/raw/main/assets/phpstan.neon
     fi
     CONFIGURATION="--configuration=/tmp/drupalrc.phpstan.neon"
   fi
