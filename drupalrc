@@ -9,60 +9,25 @@
 # shellcheck disable=SC2155
 
 #-------------------------------------------------------------------------------
-# Prints a path to Drupal root directory.
-#-------------------------------------------------------------------------------
-function droot {
-  local DIR;
-
-  if [[ -n $1 ]]; then
-    DIR=$(readlink -f "$1")
-  else
-    DIR=$(pwd)
-  fi
-
-  while true; do
-    if [[ $DIR == '/' ]]; then
-      return 1;
-    fi
-    
-    if _dversion "$DIR" > /dev/null; then
-      echo "$DIR"
-      return 0
-    fi
-    
-    local DRUPAL_ROOT
-    # Check if Drupal resides in a sibling directory.
-    for SUB_DIR in www docroot web htdocs public public_html html; do
-      DRUPAL_ROOT=$DIR/$SUB_DIR
-      if _dversion "$DRUPAL_ROOT" > /dev/null; then
-        echo "$DRUPAL_ROOT"
-        return 0
-      fi
-    done
-
-    DIR=$(dirname "$DIR")
-  done
-}
-
-#-------------------------------------------------------------------------------
 # Quick navigation between Drupal directories.
 #-------------------------------------------------------------------------------
-function dcd {
+alias dcd=d-cd
+function d-cd {
 
   if [[ $1 = "$HOME" || $1 = '-' ]]; then
     cd "$1"
     return $?
   fi
 
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
+  local drupal_root
+  if ! drupal_root=$(_d-root .); then
+    _d-error 'Drupal installation was not found.'
     return 1;
   fi
 
   # Navigate to Drupal root if no argument was provided.
   if [[ -z $1 ]]; then
-    cd "$DRUPAL_ROOT"
+    cd "$drupal_root"
     return $?
   fi
 
@@ -72,28 +37,28 @@ function dcd {
     return $?
   fi
 
-  local DRUPAL_VERSION
-  DRUPAL_VERSION=$(_dversion "$DRUPAL_ROOT")
+  local drupal_version
+  drupal_version=$(_d-version "$drupal_root")
 
-  if [[ $DRUPAL_VERSION -lt 8 ]]; then
-    _derror "Drupal $DRUPAL_VERSION is not supported."
+  if [[ $drupal_version -lt 8 ]]; then
+    _d-error "Drupal $drupal_version is not supported."
     return 1;
   fi
 
   # Quick search in predefined list of Drupal directories.
-  for DIR in $(_dcd_dirs); do
-    if [[ -d $DRUPAL_ROOT/$DIR/$1 ]]; then
-      cd "$DRUPAL_ROOT/$DIR/$1"
+  for dir in $(_dcd_dirs); do
+    if [[ -d $drupal_root/$dir/$1 ]]; then
+      cd "$drupal_root/$dir/$1"
       return $?
     fi
   done
 
   # Deep search.
-  local DIR;
-  local TARGET_DIRS="$DRUPAL_ROOT/modules $DRUPAL_ROOT/themes"
+  local dir;
+  local target_dirs="$drupal_root/modules $drupal_root/themes"
   # shellcheck disable=SC2086
-  DIR=$(find \
-    $TARGET_DIRS \
+  dir=$(find \
+    $target_dirs \
     -maxdepth 3 \
     -path "*js" -prune -o \
     -path "*css" -prune -o \
@@ -105,12 +70,12 @@ function dcd {
     -name "$1.info.yml"\
     -printf '%h\n')
 
-  if [[ -n $DIR ]]; then
-    cd "$DIR"
+  if [[ -n $dir ]]; then
+    cd "$dir"
     return $?
   fi
 
-  _derror "No such directory $1."
+  _d-error "No such directory $1."
   return 1
 }
 
@@ -118,48 +83,47 @@ function dcd {
 # Downloads Drupal projects.
 #-------------------------------------------------------------------------------
 function dl {
-
   if [[ -z $1 ]]; then
-    _derror 'Missing project name.'
+    _d-error 'Missing project name.'
     return 1;
   fi
 
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
+  local drupal_root
+  if ! drupal_root=$(_d-root .); then
+    _d-error 'Drupal installation was not found.'
     return 1;
   fi
 
-  local DRUPAL_VERSION=$(_dversion "$DRUPAL_ROOT")
-  if [[ $DRUPAL_VERSION -lt 8 ]]; then
-    _derror "Drupal $DRUPAL_VERSION is not supported."
+  local drupal_version=$(_d-version "$drupal_root")
+  if [[ $drupal_version -lt 8 ]]; then
+    _d-error "Drupal $drupal_version is not supported."
     return 1;
   fi
 
-  local PROJECT_ROOT
-  if ! PROJECT_ROOT=$(_dproject "$DRUPAL_ROOT"); then
-    _derror "Could not find composer.json file."
+  local project_root
+  if ! project_root=$(_d-project "$drupal_root"); then
+    _d-error "Could not find composer.json file."
     return 1
   fi
-  local PROJECTS=$(echo "$@" | sed 's/\</drupal\//g')
+  local projects=$(echo "$@" | sed 's/\</drupal\//g')
   echo 'Starting composer, this may take a while...'
   # shellcheck disable=SC2086
-  composer require -d "$PROJECT_ROOT" $PROJECTS
+  composer require -d "$project_root" $projects
 }
 
 #-------------------------------------------------------------------------------
 # Rebuilds Drupal caches.
 #-------------------------------------------------------------------------------
 function dcr {
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
+  local drupal_root
+  if ! drupal_root=$(_d-root .); then
+    _d-error 'Drupal installation was not found.'
     return 1;
   fi
 
-  local DRUPAL_VERSION=$(_dversion "$DRUPAL_ROOT")
-  if [[ $DRUPAL_VERSION -lt 8 ]]; then
-    _derror "Drupal $DRUPAL_VERSION is not supported."
+  local drupal_version=$(_d-version "$drupal_root")
+  if [[ $drupal_version -lt 8 ]]; then
+    _d-error "Drupal $drupal_version is not supported."
     return 1;
   fi
 
@@ -170,26 +134,26 @@ function dcr {
 # Opens Drupal configuration files in editor.
 #-------------------------------------------------------------------------------
 function dconf {
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
+  local drupal_root
+  if ! drupal_root=$(_d-root .); then
+    _d-error 'Drupal installation was not found.'
     return 1;
   fi
 
-  local FILE=$DRUPAL_ROOT/sites/default/${1-settings.php}
+  local FILE=$drupal_root/sites/default/${1-settings.php}
   if [[ ! -f $FILE ]]; then
-    local PROJECT_ROOT
-    if ! PROJECT_ROOT=$(_dproject "$DRUPAL_ROOT"); then
-      _derror "Could not locate $1 file."
+    local project_root
+    if ! project_root=$(_d-project "$drupal_root"); then
+      _d-error "Could not locate $1 file."
       return 1
     fi
-    FILE=$PROJECT_ROOT/$1
-    if [[ ! -f $FILE ]]; then
-      _derror "Could not locate $1 file."
+    FILE=$project_root/$1
+    if [[ ! -f $file ]]; then
+      _d-error "Could not locate $1 file."
       return 1
     fi
   fi
-  ${VISUAL-${EDITOR-vi}} "$FILE"
+  ${VISUAL-${EDITOR-vi}} "$file"
   return $?
 }
 
@@ -197,25 +161,25 @@ function dconf {
 # Executes scripts from vendor/bin directory.
 #-------------------------------------------------------------------------------
 function dbin {
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
+  local drupal_root
+  if ! drupal_root=$(_d-root .); then
+    _d-error 'Drupal installation was not found.'
     return 1;
   elif [[ -z $1 ]]; then
-    _derror 'Target file was not specified.'
+    _d-error 'Target file was not specified.'
     return 1;
   else
-    local BIN_DIR
-    if ! BIN_DIR=$(_dbin "$DRUPAL_ROOT"); then
-      _derror 'bin directory was not found.'
+    local bin_dir
+    if ! bin_dir=$(_d-bin "$drupal_root"); then
+      _d-error 'bin directory was not found.'
       return 1;
     fi
-    local FILE=$BIN_DIR/$1
-    if [[ ! -f $FILE ]]; then
-      _derror 'No such file.'
+    local file=$bin_dir/$1
+    if [[ ! -f $file ]]; then
+      _d-error 'No such file.'
       return 1;
     fi
-    $FILE "${@:2}"
+    $file "${@:2}"
     return $?
   fi
 }
@@ -224,20 +188,20 @@ function dbin {
 # Executes Drush.
 #-------------------------------------------------------------------------------
 function drush {
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
+  local drupal_root
+  if ! drupal_root=$(_d-root .); then
+    _d-error 'Drupal installation was not found.'
     return 1;
   fi
 
-  local DRUPAL_VERSION=$(_dversion "$DRUPAL_ROOT")
-  if [[ DRUPAL_VERSION -ge 8 ]]; then
-    local FILE=$(_dbin "$DRUPAL_ROOT")/drush
-    if [[ -f $FILE ]]; then
-      $FILE "$@"
+  local drupal_version=$(_d-version "$drupal_root")
+  if [[ drupal_version -ge 8 ]]; then
+    local file=$(_d-bin "$drupal_root")/drush
+    if [[ -f $file ]]; then
+      $file "$@"
       return $?
     else
-      _derror 'Drush is not installed on this site.'
+      _d-error 'Drush is not installed on this site.'
       return 1;
     fi
   fi
@@ -251,27 +215,27 @@ function drush {
 # Executes PHP code sniffer using Drupal standards.
 #-------------------------------------------------------------------------------
 function drupalcs {
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
+  local drupal_root
+  if ! drupal_root=$(_d-root .); then
+    _d-error 'Drupal installation was not found.'
     return 1;
   fi
 
-  local PHPCS=$(_dbin "$DRUPAL_ROOT")/phpcs
-  if [[ ! -f $PHPCS ]]; then
-    _derror 'PHP code sniffer is not installed.'
+  local phpcs=$(_d-bin "$drupal_root")/phpcs
+  if [[ ! -f $phpcs ]]; then
+    _d-error 'PHP code sniffer is not installed.'
     return 1
   fi
 
-  local STANDARD
+  local standard
   if [[ -f phpcs.xml ]]; then
-    STANDARD=phpcs.xml
+    standard=phpcs.xml
   else
-    STANDARD=Drupal,DrupalPractice
+    standard=Drupal,DrupalPractice
   fi
 
   # Drupal coding standards needs to be installed globbaly.
-  $PHPCS --colors -sp --standard=$STANDARD "$@"
+  $phpcs --colors -sp --standard=$standard "$@"
   return $?
 }
 
@@ -280,26 +244,26 @@ function drupalcs {
 #-------------------------------------------------------------------------------
 alias d-cbf="d-phpcbf"
 function d-phpcbf {
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
+  local drupal_root
+  if ! drupal_root=$(_d-root .); then
+    _d-error 'Drupal installation was not found.'
     return 1;
   fi
 
-  local PHPCBF=$(_dbin "$DRUPAL_ROOT")/phpcbf
-  if [[ ! -f $PHPCBF ]]; then
-    _derror 'PHPCBF is not installed.'
+  local phpcbf=$(_d-bin "$drupal_root")/phpcbf
+  if [[ ! -f $phpcbf ]]; then
+    _d-error 'phpcbf is not installed.'
     return 1
   fi
 
-  local STANDARD
+  local standard
   if [[ -f phpcs.xml ]]; then
-    STANDARD=phpcs.xml
+    standard=phpcs.xml
   else
-    STANDARD=Drupal,DrupalPractice
+    standard=Drupal,DrupalPractice
   fi
 
-  $PHPCBF --colors -sp --standard=$STANDARD "$@"
+  $phpcbf --colors -sp --standard=$standard "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -308,71 +272,96 @@ function d-phpcbf {
 function dunit {
 
   if [[ $# -eq 0 ]]; then
-    _derror 'Missing path.'
+    _d-error 'Missing path.'
     return 1;
   fi
 
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
+  local drupal_root
+  if ! drupal_root=$(_d-root .); then
+    _d-error 'Drupal installation was not found.'
     return 1;
   fi
 
-  local DRUPAL_VERSION=$(_dversion "$DRUPAL_ROOT")
-  if [[ $DRUPAL_VERSION -lt 8 ]]; then
-    _derror "Drupal $DRUPAL_VERSION is not supported."
+  local drupal_version=$(_d-version "$drupal_root")
+  if [[ $drupal_version -lt 8 ]]; then
+    _d-error "Drupal $drupal_version is not supported."
     return 1;
   fi
 
-  local FILE=$(_dbin "$DRUPAL_ROOT")/phpunit
+  local FILE=$(_d-bin "$drupal_root")/phpunit
   if [[ ! -f $FILE ]]; then
-    _derror 'PHPUnit is not installed.'
+    _d-error 'PHPUnit is not installed.'
     return 1
   fi
 
-  sudo -uwww-data -E "$FILE" -c "$DRUPAL_ROOT"/core "$@"
+  sudo -uwww-data -E "$file" -c "$drupal_root"/core "$@"
 }
 
 #-------------------------------------------------------------------------------
 # Runs PHPStan analyze.
 #-------------------------------------------------------------------------------
 alias d-stan="d-phpstan"
+alias dstan="d-phpstan"
 function d-phpstan {
-  if [[ $# -eq 0 ]]; then
-    _derror 'Missing path.'
+  local path=${1:-$(pwd)}
+
+  local drupal_root
+  if ! drupal_root=$(_d-root "$path"); then
+    echo 'Drupal installation was not found.' 2>&1
     return 1;
   fi
 
-  local DRUPAL_ROOT
-  if ! DRUPAL_ROOT=$(droot); then
-    _derror 'Drupal installation was not found.'
+  local drupal_version=$(_d-version "$drupal_root")
+  if [[ $drupal_version -lt 8 ]]; then
+    echo "Drupal $drupal_version is not supported." 2>&1
     return 1;
   fi
 
-  local DRUPAL_VERSION=$(_dversion "$DRUPAL_ROOT")
-  if [[ $DRUPAL_VERSION -lt 8 ]]; then
-    _derror "Drupal $DRUPAL_VERSION is not supported."
-    return 1;
-  fi
-
-  local PHPSTAN=$(_dbin "$DRUPAL_ROOT")/phpstan
-  if [[ ! -f $PHPSTAN ]]; then
-    _derror 'PHPStan is not installed.'
+  local phpstan=$(_d-bin "$drupal_root")/phpstan
+  if [[ ! -f $phpstan ]]; then
+    _d-error 'PHPStan is not installed.'
     return 1
   fi
 
-  local CONFIGURATION
+  local configuration
   if [[ -f phpstan.neon ]]; then
-    CONFIGURATION="--configuration=phpstan.neon"
-  else
-    if [[ ! -f /tmp/drupalrc.phpstan.neon ]]; then
-      echo "Executing curl --output /tmp/drupalrc.phpstan.neon https://git.drupalcode.org/project/gitlab_templates/-/raw/main/assets/phpstan.neon"
-      curl --output /tmp/drupalrc.phpstan.neon https://git.drupalcode.org/project/gitlab_templates/-/raw/main/assets/phpstan.neon
-    fi
-    CONFIGURATION="--configuration=/tmp/drupalrc.phpstan.neon"
+    configuration="--configuration=phpstan.neon"
   fi
 
-  "$PHPSTAN" analyze "$CONFIGURATION" "$@"
+  "$phpstan" analyze "$configuration" "$@"
+}
+
+#-------------------------------------------------------------------------------
+# Prints a path to Drupal root directory.
+#
+# @internal
+#-------------------------------------------------------------------------------
+function _d-root {
+  : "${1?${FUNCNAME[0]} - missing parameter}"
+
+  local dir=$(readlink -f "$1");
+  local drupal_root
+  while true; do
+    if [[ $dir == '/' ]]; then
+      return 1;
+    fi
+
+    if _d-version "$dir" > /dev/null; then
+      echo "$dir"
+      return 0
+    fi
+
+    # Check if Drupal resides in a sibling directory.
+    for sub_dir in www docroot web htdocs public public_html html; do
+      drupal_root=$dir/$sub_dir
+      if _d-version "$drupal_root" > /dev/null; then
+        echo "$drupal_root"
+        return 0
+      fi
+    done
+
+    dir=$(dirname "$dir")
+  done
 }
 
 #-------------------------------------------------------------------------------
@@ -380,9 +369,10 @@ function d-phpstan {
 #
 # @internal
 #-------------------------------------------------------------------------------
-function _dversion {
+function _d-version {
+  : "${1?${FUNCNAME[0]} - missing parameter}"
   if [[ -f $1/index.php && -f $1/core/lib/Drupal.php ]]; then
-    grep -E 'const VERSION = ' "$1/core/lib/Drupal.php" | sed "s/\s*const VERSION = '//; s/\..*$//"
+    grep -oP "(?<=VERSION = ')[0-9]+(?=\.)" "$1"/core/lib/Drupal.php
   elif [[ -f $1/index.php && -d $1/includes/database ]]; then
     echo 7
   elif [[ -f $1/index.php && -f $1/includes/database.inc ]]; then
@@ -400,15 +390,15 @@ function _dversion {
 #
 # @internal
 #-------------------------------------------------------------------------------
-function _dproject {
-  local PROJECT_ROOT=$1/..
-  if [[ ! -f $PROJECT_ROOT/composer.json ]]; then
-    PROJECT_ROOT=$1
-    if [[ ! -f $PROJECT_ROOT/composer.json ]]; then
-      return 1
-    fi
+function _d-project {
+  : "${1?${FUNCNAME[0]} - missing parameter}"
+  if [[ -f $1/../composer.json ]]; then
+    echo "$1"/..
+  elif [[ -f $1/composer.json ]]; then
+    echo "$1"
+  else
+    return 1
   fi
-  echo "$PROJECT_ROOT"
 }
 
 #-------------------------------------------------------------------------------
@@ -416,8 +406,8 @@ function _dproject {
 #
 # @internal
 #-------------------------------------------------------------------------------
-function _derror {
-  >&2 echo -e "\e[91m$*\e[0m"
+function _d-error {
+  echo -e "\e[91m$*\e[0m" >&2
 }
 
 #-------------------------------------------------------------------------------
@@ -437,17 +427,20 @@ function _dcd_dirs {
 #
 # @internal
 #-------------------------------------------------------------------------------
-function _dbin {
-  local PROJECT_ROOT
-  if ! PROJECT_ROOT=$(_dproject "$1"); then
+function _d-bin {
+  : "${1?${FUNCNAME[0]} - missing parameter}"
+  local project_root
+  if ! project_root=$(_d-project "$1"); then
     return 1
   fi
-  local BIN_DIR=$PROJECT_ROOT/vendor/bin
-  if [[ ! -d $BIN_DIR ]]; then
-    BIN_DIR=$PROJECT_ROOT/bin
-    if [[ ! -d $BIN_DIR ]]; then
-      return 1;
-    fi
+  # Technically the bin directory can be everywhere. However, the vast majority
+  # projects use default location.
+  # @see `composer config vendor-bin`
+  if [[ -d "$project_root"/vendor/bin ]]; then
+    echo "$project_root"/vendor/bin
+  elif [[ -d "$project_root"/bin ]]; then
+    echo "$project_root"/bin
+  else
+    return 1
   fi
-  echo "$BIN_DIR";
 }
